@@ -1,0 +1,115 @@
+Summary
+  Generated on: 28/9/2025 - 6:19:02 pm
+  Coverage date: 28/9/2025 - 12:45:12 pm - 28/9/2025 - 6:17:30 pm
+  Parser: MultiReport (66x Cobertura)
+  Assemblies: 5
+  Classes: 85
+  Files: 53
+  Line coverage: 55.2%
+  Covered lines: 1587
+  Uncovered lines: 1288
+  Coverable lines: 2875
+  Total lines: 4505
+  Branch coverage: 49% (254 of 518)
+  Covered branches: 254
+  Total branches: 518
+  Method coverage: 90.1% (355 of 394)
+  Full method coverage: 83.2% (328 of 394)
+  Covered methods: 355
+  Fully covered methods: 328
+  Total methods: 394
+
+Sigma.API                                                                  47.1%
+  Microsoft.AspNetCore.OpenApi.Generated                                      0%
+  Program                                                                  87.8%
+  Sigma.API.GraphQL.ChannelType                                             100%
+  Sigma.API.GraphQL.CreateChannelInput                                      100%
+  Sigma.API.GraphQL.CreateChannelPayload                                    100%
+  Sigma.API.GraphQL.CreateTenantInput                                       100%
+  Sigma.API.GraphQL.CreateTenantPayload                                     100%
+  Sigma.API.GraphQL.CreateWorkspaceInput                                    100%
+  Sigma.API.GraphQL.CreateWorkspacePayload                                  100%
+  Sigma.API.GraphQL.MessageType                                             100%
+  Sigma.API.GraphQL.Mutation                                               71.7%
+  Sigma.API.GraphQL.Payload                                                 100%
+  Sigma.API.GraphQL.Query                                                  69.3%
+  Sigma.API.GraphQL.TenantType                                              100%
+  Sigma.API.GraphQL.UpdateTenantPlanInput                                   100%
+  Sigma.API.GraphQL.UpdateTenantPlanPayload                                 100%
+  Sigma.API.GraphQL.UserError                                               100%
+  Sigma.API.GraphQL.WorkspaceType                                           100%
+  Sigma.API.Webhooks.DiscordWebhookHandler                                  100%
+  Sigma.API.Webhooks.SlackWebhookHandler                                   80.9%
+  Sigma.API.Webhooks.TelegramWebhookHandler                                 100%
+  Sigma.API.Webhooks.WebhookHandlerBase                                    79.4%
+  Sigma.API.Webhooks.WhatsAppWebhookHandler                                 100%
+  System.Runtime.CompilerServices                                             0%
+
+Sigma.Application                                                            90%
+  Sigma.Application.Behaviors.AuthorizationBehavior                        90.2%
+  Sigma.Application.Behaviors.LoggingBehavior                              86.8%
+  Sigma.Application.Behaviors.TransactionBehavior                          64.7%
+  Sigma.Application.Behaviors.ValidationBehavior                           97.5%
+  Sigma.Application.Commands.CreateTenantCommand                            100%
+  Sigma.Application.Commands.CreateTenantCommandHandler                     100%
+  Sigma.Application.Commands.CreateWorkspaceCommand                         100%
+  Sigma.Application.Commands.CreateWorkspaceCommandHandler                  100%
+  Sigma.Application.Common.Pipeline.ValidationError                         100%
+  Sigma.Application.Common.Pipeline.ValidationResult                        100%
+  Sigma.Application.Contracts.Error                                        81.8%
+  Sigma.Application.Contracts.Result                                       90.9%
+  Sigma.Application.Contracts.Result<T>                                     100%
+  Sigma.Application.Queries.GetTenantByIdQuery                              100%
+  Sigma.Application.Queries.GetTenantByIdQueryHandler                       100%
+  Sigma.Application.Services.CommandDispatcher                             81.4%
+  Sigma.Application.Services.QueryDispatcher                                100%
+  Sigma.Application.Tenants.Commands.CreateTenantCommand                    100%
+  Sigma.Application.Tenants.Commands.CreateTenantCommandHandler             100%
+  Sigma.Application.Tenants.DTOs.TenantDto                                  100%
+  Sigma.Application.Tenants.Queries.GetTenantByIdQuery                      100%
+  Sigma.Application.Tenants.Queries.GetTenantByIdQueryHandler               100%
+  Sigma.Application.Validators.CreateTenantCommandValidator                 100%
+
+Sigma.Domain                                                               87.5%
+  Sigma.Domain.Common.Entity                                                100%
+  Sigma.Domain.Common.ValueObject                                          92.5%
+  Sigma.Domain.Entities.Channel                                            86.8%
+  Sigma.Domain.Entities.Message                                            88.8%
+  Sigma.Domain.Entities.Tenant                                               84%
+  Sigma.Domain.Entities.Workspace                                          87.8%
+  Sigma.Domain.ValueObjects.MessageReaction                                73.3%
+  Sigma.Domain.ValueObjects.MessageSender                                  80.9%
+
+Sigma.Infrastructure                                                       37.8%
+  Sigma.Infrastructure.Migrations.InitialCreate                               0%
+  Sigma.Infrastructure.Migrations.SigmaDbContextModelSnapshot                 0%
+  Sigma.Infrastructure.Persistence.Configurations.ChannelConfiguration      100%
+  Sigma.Infrastructure.Persistence.Configurations.MessageConfiguration      100%
+  Sigma.Infrastructure.Persistence.Configurations.TenantConfiguration       100%
+  Sigma.Infrastructure.Persistence.Configurations.WorkspaceConfiguration    100%
+  Sigma.Infrastructure.Persistence.Repositories.ChannelRepository           100%
+  Sigma.Infrastructure.Persistence.Repositories.MessageRepository           100%
+  Sigma.Infrastructure.Persistence.Repositories.TenantRepository             90%
+  Sigma.Infrastructure.Persistence.Repositories.WorkspaceRepository        86.8%
+  Sigma.Infrastructure.Persistence.SigmaDbContext                          94.6%
+  Sigma.Infrastructure.Persistence.UnitOfWork                               100%
+  Sigma.Infrastructure.Services.TenantContext                               100%
+
+Sigma.Shared                                                                100%
+  Sigma.Shared.Configuration.DiscordSettings                                100%
+  Sigma.Shared.Configuration.PlatformSettings                               100%
+  Sigma.Shared.Configuration.SlackSettings                                  100%
+  Sigma.Shared.Configuration.TelegramSettings                               100%
+  Sigma.Shared.Configuration.WhatsAppSettings                               100%
+  Sigma.Shared.Contracts.DiscordWebhookPayload                              100%
+  Sigma.Shared.Contracts.MessageEvent                                       100%
+  Sigma.Shared.Contracts.MessageFragment                                    100%
+  Sigma.Shared.Contracts.MessageMedia                                       100%
+  Sigma.Shared.Contracts.MessageReactionInfo                                100%
+  Sigma.Shared.Contracts.MessageSenderInfo                                  100%
+  Sigma.Shared.Contracts.SlackWebhookPayload                                100%
+  Sigma.Shared.Contracts.TelegramWebhookPayload                             100%
+  Sigma.Shared.Contracts.WebhookPayload                                     100%
+  Sigma.Shared.Contracts.WhatsAppChange                                     100%
+  Sigma.Shared.Contracts.WhatsAppEntry                                      100%
+  Sigma.Shared.Contracts.WhatsAppWebhookPayload                             100%

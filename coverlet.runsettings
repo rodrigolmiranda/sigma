@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat Code Coverage">
+        <Configuration>
+          <Exclude>
+            <!-- Exclude auto-generated code -->
+            [*]Microsoft.AspNetCore.OpenApi.Generated.*
+            [*]System.Runtime.CompilerServices.*
+            <!-- Exclude migrations -->
+            [Sigma.Infrastructure]Sigma.Infrastructure.Migrations.*
+            <!-- Exclude Program.cs Main method -->
+            [Sigma.API]Program.Main
+          </Exclude>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>
