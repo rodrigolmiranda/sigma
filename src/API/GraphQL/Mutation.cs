@@ -142,6 +142,25 @@ public class Mutation
             };
         }
 
+        // Check for duplicate external ID
+        if (!string.IsNullOrEmpty(input.ExternalId))
+        {
+            var existingChannel = await channelRepository.GetByExternalIdAsync(
+                input.ExternalId,
+                input.WorkspaceId,
+                input.TenantId,
+                cancellationToken);
+
+            if (existingChannel != null)
+            {
+                return new CreateChannelPayload
+                {
+                    Success = false,
+                    Errors = new[] { new UserError($"Channel with external ID '{input.ExternalId}' already exists", "CONFLICT") }
+                };
+            }
+        }
+
         var channel = workspace.AddChannel(input.Name, input.ExternalId);
         await channelRepository.AddAsync(channel, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);

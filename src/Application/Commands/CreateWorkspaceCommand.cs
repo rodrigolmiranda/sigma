@@ -35,6 +35,21 @@ public sealed class CreateWorkspaceCommandHandler : ICommandHandler<CreateWorksp
             return Error.NotFound($"Tenant with ID '{command.TenantId}' not found");
         }
 
+        // Check for duplicate external ID
+        if (!string.IsNullOrEmpty(command.ExternalId))
+        {
+            var existingWorkspace = await _workspaceRepository.GetByExternalIdAsync(
+                command.ExternalId,
+                command.Platform,
+                command.TenantId,
+                cancellationToken);
+
+            if (existingWorkspace != null)
+            {
+                return Error.Conflict($"Workspace with external ID '{command.ExternalId}' already exists");
+            }
+        }
+
         var workspace = tenant.AddWorkspace(command.Name, command.Platform);
 
         if (!string.IsNullOrEmpty(command.ExternalId))

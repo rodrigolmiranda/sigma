@@ -200,7 +200,7 @@ public class MutationIntegrationTests : GraphQLTestBase
             input = new
             {
                 name = "Default Plan Tenant",
-                slug = $"default-plan-tenant-{Guid.NewGuid():N}"
+                slug = $"tenant-{Guid.NewGuid():N}" // 39 chars, within 50 char limit
                 // No planType or retentionDays specified
             }
         };
@@ -212,6 +212,14 @@ public class MutationIntegrationTests : GraphQLTestBase
         Assert.NotNull(response);
         Assert.Null(response.Errors);
         Assert.NotNull(response.Data);
+
+        // Debug: Check errors if success is false
+        if (!response.Data.CreateTenant.Success && response.Data.CreateTenant.Errors != null)
+        {
+            var errorMessages = string.Join(", ", response.Data.CreateTenant.Errors.Select(e => $"{e.Code}: {e.Message}"));
+            throw new Exception($"Mutation failed with errors: {errorMessages}");
+        }
+
         Assert.True(response.Data.CreateTenant.Success);
         Assert.NotNull(response.Data.CreateTenant.Tenant);
         Assert.Equal("free", response.Data.CreateTenant.Tenant.PlanType);
@@ -525,6 +533,22 @@ public class MutationIntegrationTests : GraphQLTestBase
 
         // Assert
         Assert.NotNull(response);
+
+        // Debug: Check for GraphQL errors
+        if (response.Errors != null && response.Errors.Any())
+        {
+            var errorMessages = string.Join("\n", response.Errors.Select(e =>
+            {
+                var msg = e.Message;
+                if (e.Extensions != null && e.Extensions.ContainsKey("message"))
+                    msg += $" - {e.Extensions["message"]}";
+                if (e.Extensions != null && e.Extensions.ContainsKey("stackTrace"))
+                    msg += $"\nStackTrace: {e.Extensions["stackTrace"]}";
+                return msg;
+            }));
+            throw new Exception($"GraphQL errors:\n{errorMessages}");
+        }
+
         Assert.NotNull(response.Data);
         Assert.NotNull(response.Data.CreateWorkspace);
         Assert.False(response.Data.CreateWorkspace.Success);
@@ -667,6 +691,10 @@ public class MutationIntegrationTests : GraphQLTestBase
         dbContext.Tenants.Add(tenant);
         await dbContext.SaveChangesAsync();
 
+        // Set TenantId shadow property on channel (not set automatically through aggregate)
+        dbContext.Entry(existingChannel).Property("TenantId").CurrentValue = tenant.Id;
+        await dbContext.SaveChangesAsync();
+
         var mutation = @"
             mutation CreateChannel($input: CreateChannelInput!) {
                 createChannel(input: $input) {
@@ -697,6 +725,22 @@ public class MutationIntegrationTests : GraphQLTestBase
 
         // Assert
         Assert.NotNull(response);
+
+        // Debug: Check for GraphQL errors
+        if (response.Errors != null && response.Errors.Any())
+        {
+            var errorMessages = string.Join("\n", response.Errors.Select(e =>
+            {
+                var msg = e.Message;
+                if (e.Extensions != null && e.Extensions.ContainsKey("message"))
+                    msg += $" - {e.Extensions["message"]}";
+                if (e.Extensions != null && e.Extensions.ContainsKey("stackTrace"))
+                    msg += $"\nStackTrace: {e.Extensions["stackTrace"]}";
+                return msg;
+            }));
+            throw new Exception($"GraphQL errors:\n{errorMessages}");
+        }
+
         Assert.NotNull(response.Data);
         Assert.NotNull(response.Data.CreateChannel);
         Assert.False(response.Data.CreateChannel.Success);
