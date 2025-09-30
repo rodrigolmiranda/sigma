@@ -360,6 +360,11 @@ public class QueryIntegrationTests : GraphQLTestBase
         dbContext.Tenants.Add(tenant);
         await dbContext.SaveChangesAsync();
 
+        // Set TenantId shadow property on channels (not set automatically through aggregate)
+        dbContext.Entry(channel1).Property("TenantId").CurrentValue = tenant.Id;
+        dbContext.Entry(channel2).Property("TenantId").CurrentValue = tenant.Id;
+        await dbContext.SaveChangesAsync();
+
         var query = @$"
             query {{
                 channels(workspaceId: ""{workspace.Id}"", tenantId: ""{tenant.Id}"") {{
@@ -422,6 +427,10 @@ public class QueryIntegrationTests : GraphQLTestBase
         var channel = workspace.AddChannel("Test Channel", $"ext-channel-{Guid.NewGuid():N}");
 
         dbContext.Tenants.Add(tenant);
+        await dbContext.SaveChangesAsync();
+
+        // Set TenantId shadow property on channel
+        dbContext.Entry(channel).Property("TenantId").CurrentValue = tenant.Id;
         await dbContext.SaveChangesAsync();
 
         var query = @$"
