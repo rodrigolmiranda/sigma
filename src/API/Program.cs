@@ -65,6 +65,7 @@ builder.Services.AddScoped<IChannelRepository, ChannelRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IOutboxRepository, OutboxRepository>();
 builder.Services.AddScoped<IWebhookEventRepository, WebhookEventRepository>();
+builder.Services.AddScoped<IAnalyticsRepository, AnalyticsRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<ITransactionManager, TransactionManager>();
 
@@ -102,11 +103,21 @@ builder.Services.AddScoped<IQueryHandler<GetTenantByIdQuery, Tenant>, GetTenantB
 // Register validators
 builder.Services.AddValidatorsFromAssemblyContaining<CreateTenantCommandValidator>();
 
+// Register application services
+builder.Services.AddScoped<Sigma.Application.Services.IMessageNormalizer, Sigma.Application.Services.MessageNormalizer>();
+builder.Services.AddScoped<Sigma.Application.Services.ISummaryGenerator, Sigma.Application.Services.SummaryGenerator>();
+builder.Services.AddScoped<Sigma.Application.Services.ISummaryPoster, Sigma.Application.Services.SummaryPoster>();
+
+// Register platform clients with HttpClient
+builder.Services.AddHttpClient<Sigma.Application.PlatformClients.ITelegramClient, Sigma.Infrastructure.PlatformClients.TelegramClient>();
+builder.Services.AddHttpClient<Sigma.Application.PlatformClients.IWhatsAppClient, Sigma.Infrastructure.PlatformClients.WhatsAppClient>();
+
 // Configure GraphQL
 builder.Services
     .AddGraphQLServer()
     .AddAuthorization()
     .AddQueryType<Query>()
+    .AddTypeExtension<AnalyticsQueries>()
     .AddMutationType<Mutation>()
     .AddType<TenantType>()
     .AddType<WorkspaceType>()

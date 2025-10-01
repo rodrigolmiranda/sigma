@@ -1,4 +1,5 @@
 using Sigma.API.GraphQL;
+using Sigma.Shared.Enums;
 using Xunit;
 
 namespace Sigma.API.Tests.GraphQL.Types;
@@ -44,13 +45,13 @@ public class GraphQLTypesTests
         var input = new CreateWorkspaceInput(
             TenantId: Guid.NewGuid(),
             Name: "Test Workspace",
-            Platform: "slack",
+            Platform: Platform.Slack,
             ExternalId: "ext-123");
 
         // Assert
         Assert.NotEqual(Guid.Empty, input.TenantId);
         Assert.Equal("Test Workspace", input.Name);
-        Assert.Equal("slack", input.Platform);
+        Assert.Equal(Platform.Slack, input.Platform);
         Assert.Equal("ext-123", input.ExternalId);
     }
 
@@ -59,7 +60,7 @@ public class GraphQLTypesTests
     {
         // Arrange & Act
         var tenantId = Guid.NewGuid();
-        var workspace = new Domain.Entities.Workspace(tenantId, "Test Workspace", "slack");
+        var workspace = new Domain.Entities.Workspace(tenantId, "Test Workspace", Platform.Slack);
         workspace.UpdateExternalId("ext-ws-123");
 
         var payload = new CreateWorkspacePayload

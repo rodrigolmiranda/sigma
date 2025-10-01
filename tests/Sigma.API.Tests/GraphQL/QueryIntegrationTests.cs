@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Sigma.Domain.Entities;
 using Sigma.Domain.ValueObjects;
 using Sigma.Infrastructure.Persistence;
+using Sigma.Shared.Enums;
 using Xunit;
 
 namespace Sigma.API.Tests.GraphQL;
@@ -223,9 +224,9 @@ public class QueryIntegrationTests : GraphQLTestBase
         var dbContext = scope.ServiceProvider.GetRequiredService<SigmaDbContext>();
 
         var tenant = new Tenant("Test Tenant", $"test-tenant-{Guid.NewGuid():N}", "starter", 30);
-        var workspace1 = tenant.AddWorkspace("Workspace 1", "WhatsApp");
+        var workspace1 = tenant.AddWorkspace("Workspace 1", Platform.WhatsApp);
         workspace1.UpdateExternalId($"ext-1-{Guid.NewGuid():N}");
-        var workspace2 = tenant.AddWorkspace("Workspace 2", "Telegram");
+        var workspace2 = tenant.AddWorkspace("Workspace 2", Platform.Telegram);
         workspace2.UpdateExternalId($"ext-2-{Guid.NewGuid():N}");
 
         dbContext.Tenants.Add(tenant);
@@ -249,8 +250,8 @@ public class QueryIntegrationTests : GraphQLTestBase
         Assert.Null(response.Errors);
         Assert.NotNull(response.Data);
         Assert.Equal(2, response.Data.Workspaces.Count);
-        Assert.Contains(response.Data.Workspaces, w => w.Name == "Workspace 1" && w.Platform == "WhatsApp");
-        Assert.Contains(response.Data.Workspaces, w => w.Name == "Workspace 2" && w.Platform == "Telegram");
+        Assert.Contains(response.Data.Workspaces, w => w.Name == "Workspace 1" && w.Platform == "WHATS_APP");
+        Assert.Contains(response.Data.Workspaces, w => w.Name == "Workspace 2" && w.Platform == "TELEGRAM");
     }
 
     [Fact]
@@ -288,7 +289,7 @@ public class QueryIntegrationTests : GraphQLTestBase
         var dbContext = scope.ServiceProvider.GetRequiredService<SigmaDbContext>();
 
         var tenant = new Tenant("Test Tenant", $"test-tenant-{Guid.NewGuid():N}", "starter", 30);
-        var workspace = tenant.AddWorkspace("Test Workspace", "WhatsApp");
+        var workspace = tenant.AddWorkspace("Test Workspace", Platform.WhatsApp);
         workspace.UpdateExternalId($"ext-123-{Guid.NewGuid():N}");
 
         dbContext.Tenants.Add(tenant);
@@ -313,7 +314,7 @@ public class QueryIntegrationTests : GraphQLTestBase
         Assert.NotNull(response.Data);
         Assert.NotNull(response.Data.Workspace);
         Assert.Equal("Test Workspace", response.Data.Workspace.Name);
-        Assert.Equal("WhatsApp", response.Data.Workspace.Platform);
+        Assert.Equal("WHATS_APP", response.Data.Workspace.Platform);
     }
 
     [Fact]
@@ -351,7 +352,7 @@ public class QueryIntegrationTests : GraphQLTestBase
         var dbContext = scope.ServiceProvider.GetRequiredService<SigmaDbContext>();
 
         var tenant = new Tenant("Test Tenant", $"test-tenant-{Guid.NewGuid():N}", "starter", 30);
-        var workspace = tenant.AddWorkspace("Test Workspace", "WhatsApp");
+        var workspace = tenant.AddWorkspace("Test Workspace", Platform.WhatsApp);
         workspace.UpdateExternalId($"ext-workspace-{Guid.NewGuid():N}");
 
         var channel1 = workspace.AddChannel("General", $"ext-general-{Guid.NewGuid():N}");
@@ -421,7 +422,7 @@ public class QueryIntegrationTests : GraphQLTestBase
         var dbContext = scope.ServiceProvider.GetRequiredService<SigmaDbContext>();
 
         var tenant = new Tenant("Test Tenant", $"test-tenant-{Guid.NewGuid():N}", "starter", 30);
-        var workspace = tenant.AddWorkspace("Test Workspace", "Telegram");
+        var workspace = tenant.AddWorkspace("Test Workspace", Platform.Telegram);
         workspace.UpdateExternalId($"ext-workspace-{Guid.NewGuid():N}");
 
         var channel = workspace.AddChannel("Test Channel", $"ext-channel-{Guid.NewGuid():N}");
@@ -489,7 +490,7 @@ public class QueryIntegrationTests : GraphQLTestBase
         var dbContext = scope.ServiceProvider.GetRequiredService<SigmaDbContext>();
 
         var tenant = new Tenant("Test Tenant", $"test-tenant-{Guid.NewGuid():N}", "starter", 30);
-        var workspace = tenant.AddWorkspace("Test Workspace", "WhatsApp");
+        var workspace = tenant.AddWorkspace("Test Workspace", Platform.WhatsApp);
         workspace.UpdateExternalId($"ext-workspace-{Guid.NewGuid():N}");
 
         var channel = workspace.AddChannel("Test Channel", $"ext-channel-{Guid.NewGuid():N}");
@@ -552,7 +553,7 @@ public class QueryIntegrationTests : GraphQLTestBase
         var dbContext = scope.ServiceProvider.GetRequiredService<SigmaDbContext>();
 
         var tenant = new Tenant("Test Tenant", $"test-tenant-{Guid.NewGuid():N}", "starter", 30);
-        var workspace = tenant.AddWorkspace("Test Workspace", "WhatsApp");
+        var workspace = tenant.AddWorkspace("Test Workspace", Platform.WhatsApp);
         workspace.UpdateExternalId($"ext-workspace-{Guid.NewGuid():N}");
 
         var channel = workspace.AddChannel("Test Channel", $"ext-channel-{Guid.NewGuid():N}");
@@ -618,7 +619,7 @@ public class QueryIntegrationTests : GraphQLTestBase
         var dbContext = scope.ServiceProvider.GetRequiredService<SigmaDbContext>();
 
         var tenant = new Tenant("Test Tenant", $"test-tenant-{Guid.NewGuid():N}", "starter", 30);
-        var workspace = tenant.AddWorkspace("Test Workspace", "WhatsApp");
+        var workspace = tenant.AddWorkspace("Test Workspace", Platform.WhatsApp);
         workspace.UpdateExternalId($"ext-workspace-{Guid.NewGuid():N}");
 
         var channel = workspace.AddChannel("Test Channel", $"ext-channel-{Guid.NewGuid():N}");

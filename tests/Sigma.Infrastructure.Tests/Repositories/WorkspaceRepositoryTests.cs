@@ -1,6 +1,7 @@
 using Sigma.Domain.Entities;
 using Sigma.Infrastructure.Persistence;
 using Sigma.Infrastructure.Persistence.Repositories;
+using Sigma.Shared.Enums;
 using Xunit;
 
 namespace Sigma.Infrastructure.Tests.Repositories;
@@ -31,7 +32,7 @@ public class WorkspaceRepositoryTests : IDisposable
     public async Task GetByIdAsync_WithExistingWorkspace_ShouldReturnWorkspace()
     {
         // Arrange
-        var workspace = _tenant.AddWorkspace("Test Workspace", "Slack");
+        var workspace = _tenant.AddWorkspace("Test Workspace", Platform.Slack);
         workspace.UpdateExternalId("T123456");
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
@@ -42,7 +43,7 @@ public class WorkspaceRepositoryTests : IDisposable
         Assert.NotNull(result);
         Assert.Equal(workspace.Id, result.Id);
         Assert.Equal("Test Workspace", result.Name);
-        Assert.Equal("Slack", result.Platform);
+        Assert.Equal(Platform.Slack, result.Platform);
         Assert.Equal("T123456", result.ExternalId);
     }
 
@@ -63,11 +64,11 @@ public class WorkspaceRepositoryTests : IDisposable
     public async Task GetByTenantIdAsync_WithExistingWorkspaces_ShouldReturnAll()
     {
         // Arrange
-        var workspace1 = _tenant.AddWorkspace("Workspace 1", "Slack");
+        var workspace1 = _tenant.AddWorkspace("Workspace 1", Platform.Slack);
         workspace1.UpdateExternalId("T111");
-        var workspace2 = _tenant.AddWorkspace("Workspace 2", "Discord");
+        var workspace2 = _tenant.AddWorkspace("Workspace 2", Platform.Discord);
         workspace2.UpdateExternalId("D222");
-        var workspace3 = _tenant.AddWorkspace("Workspace 3", "Telegram");
+        var workspace3 = _tenant.AddWorkspace("Workspace 3", Platform.Telegram);
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act
@@ -98,7 +99,7 @@ public class WorkspaceRepositoryTests : IDisposable
     public async Task GetByTenantIdAsync_WithDifferentTenant_ShouldNotReturnOtherTenantWorkspaces()
     {
         // Arrange
-        var workspace1 = _tenant.AddWorkspace("Workspace 1", "Slack");
+        var workspace1 = _tenant.AddWorkspace("Workspace 1", Platform.Slack);
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var otherTenantId = Guid.NewGuid();
@@ -115,7 +116,7 @@ public class WorkspaceRepositoryTests : IDisposable
     public async Task AddAsync_WithValidWorkspace_ShouldAddToContext()
     {
         // Arrange
-        var workspace = _tenant.AddWorkspace("New Workspace", "WhatsApp");
+        var workspace = _tenant.AddWorkspace("New Workspace", Platform.WhatsApp);
         workspace.UpdateExternalId("W999");
 
         // Act
@@ -126,7 +127,7 @@ public class WorkspaceRepositoryTests : IDisposable
         var savedWorkspace = await _context.Workspaces.FindAsync(new object[] { workspace.Id }, TestContext.Current.CancellationToken);
         Assert.NotNull(savedWorkspace);
         Assert.Equal("New Workspace", savedWorkspace.Name);
-        Assert.Equal("WhatsApp", savedWorkspace.Platform);
+        Assert.Equal(Platform.WhatsApp, savedWorkspace.Platform);
         Assert.Equal("W999", savedWorkspace.ExternalId);
         Assert.Equal(_tenant.Id, savedWorkspace.TenantId);
     }
@@ -135,7 +136,7 @@ public class WorkspaceRepositoryTests : IDisposable
     public async Task UpdateAsync_WithExistingWorkspace_ShouldUpdateInContext()
     {
         // Arrange
-        var workspace = _tenant.AddWorkspace("Original Name", "Slack");
+        var workspace = _tenant.AddWorkspace("Original Name", Platform.Slack);
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act
@@ -153,12 +154,12 @@ public class WorkspaceRepositoryTests : IDisposable
     public async Task GetByExternalIdAsync_WithExistingWorkspace_ShouldReturnWorkspace()
     {
         // Arrange
-        var workspace = _tenant.AddWorkspace("Test Workspace", "Slack");
+        var workspace = _tenant.AddWorkspace("Test Workspace", Platform.Slack);
         workspace.UpdateExternalId("UNIQUE123");
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act
-        var result = await _repository.GetByExternalIdAsync("UNIQUE123", "Slack", _tenant.Id, TestContext.Current.CancellationToken);
+        var result = await _repository.GetByExternalIdAsync("UNIQUE123", Platform.Slack, _tenant.Id, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.NotNull(result);
@@ -170,7 +171,7 @@ public class WorkspaceRepositoryTests : IDisposable
     public async Task GetByExternalIdAsync_WithNonExistentExternalId_ShouldReturnNull()
     {
         // Act
-        var result = await _repository.GetByExternalIdAsync("NON_EXISTENT", "Slack", _tenant.Id, TestContext.Current.CancellationToken);
+        var result = await _repository.GetByExternalIdAsync("NON_EXISTENT", Platform.Slack, _tenant.Id, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Null(result);
@@ -180,11 +181,11 @@ public class WorkspaceRepositoryTests : IDisposable
     public async Task GetByExternalIdAsync_WithNullExternalId_ShouldReturnNull()
     {
         // Arrange
-        var workspace = _tenant.AddWorkspace("Test Workspace", "Telegram");
+        var workspace = _tenant.AddWorkspace("Test Workspace", Platform.Telegram);
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act
-        var result = await _repository.GetByExternalIdAsync(null!, "Telegram", _tenant.Id, TestContext.Current.CancellationToken);
+        var result = await _repository.GetByExternalIdAsync(null!, Platform.Telegram, _tenant.Id, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Null(result);
@@ -194,7 +195,7 @@ public class WorkspaceRepositoryTests : IDisposable
     public async Task ExistsAsync_WithExistingWorkspace_ShouldReturnTrue()
     {
         // Arrange
-        var workspace = _tenant.AddWorkspace("Test Workspace", "Test");
+        var workspace = _tenant.AddWorkspace("Test Workspace", Platform.Slack);
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act
@@ -218,7 +219,7 @@ public class WorkspaceRepositoryTests : IDisposable
     public async Task ExistsAsync_WithWrongTenantId_ShouldReturnFalse()
     {
         // Arrange
-        var workspace = _tenant.AddWorkspace("Test Workspace", "Test");
+        var workspace = _tenant.AddWorkspace("Test Workspace", Platform.Slack);
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act
@@ -232,12 +233,12 @@ public class WorkspaceRepositoryTests : IDisposable
     public async Task GetByExternalIdAsync_WithDifferentPlatform_ShouldReturnNull()
     {
         // Arrange
-        var workspace = _tenant.AddWorkspace("Test Workspace", "WhatsApp");
+        var workspace = _tenant.AddWorkspace("Test Workspace", Platform.WhatsApp);
         workspace.UpdateExternalId("ext-123");
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act
-        var result = await _repository.GetByExternalIdAsync("ext-123", "Telegram", _tenant.Id, TestContext.Current.CancellationToken);
+        var result = await _repository.GetByExternalIdAsync("ext-123", Platform.Telegram, _tenant.Id, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Null(result);
@@ -247,9 +248,9 @@ public class WorkspaceRepositoryTests : IDisposable
     public async Task GetByTenantIdAsync_WithMultiplePlatforms_ShouldReturnAll()
     {
         // Arrange
-        var workspace1 = _tenant.AddWorkspace("WS1", "WhatsApp");
-        var workspace2 = _tenant.AddWorkspace("WS2", "Telegram");
-        var workspace3 = _tenant.AddWorkspace("WS3", "Slack");
+        var workspace1 = _tenant.AddWorkspace("WS1", Platform.WhatsApp);
+        var workspace2 = _tenant.AddWorkspace("WS2", Platform.Telegram);
+        var workspace3 = _tenant.AddWorkspace("WS3", Platform.Slack);
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act
@@ -258,16 +259,16 @@ public class WorkspaceRepositoryTests : IDisposable
         // Assert
         var workspaces = result.ToList();
         Assert.Equal(3, workspaces.Count);
-        Assert.Contains(workspaces, w => w.Platform == "WhatsApp");
-        Assert.Contains(workspaces, w => w.Platform == "Telegram");
-        Assert.Contains(workspaces, w => w.Platform == "Slack");
+        Assert.Contains(workspaces, w => w.Platform == Platform.WhatsApp);
+        Assert.Contains(workspaces, w => w.Platform == Platform.Telegram);
+        Assert.Contains(workspaces, w => w.Platform == Platform.Slack);
     }
 
     [Fact]
     public async Task UpdateAsync_WithModifiedProperties_ShouldUpdateAllFields()
     {
         // Arrange
-        var workspace = _tenant.AddWorkspace("Original", "Test");
+        var workspace = _tenant.AddWorkspace("Original", Platform.Slack);
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act
@@ -285,18 +286,9 @@ public class WorkspaceRepositoryTests : IDisposable
         Assert.Equal("new-external", result.ExternalId);
     }
 
-    [Fact(Skip = "AddAsync doesn't immediately check cancellation token")]
-    public async Task AddAsync_WithCancellationToken_ShouldRespectCancellation()
-    {
-        // Arrange
-        var workspace = _tenant.AddWorkspace("Test", "Test");
-        using var cts = new CancellationTokenSource();
-        cts.Cancel();
-
-        // Act & Assert
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
-            await _repository.AddAsync(workspace, cts.Token));
-    }
+    // NOTE: EF Core's AddAsync doesn't actually perform async work or check cancellation tokens immediately.
+    // It's synchronous and only exists for interface consistency. Testing this would be testing EF Core's
+    // implementation rather than our repository. Cancellation is properly handled during SaveChangesAsync.
 
     public void Dispose()
     {

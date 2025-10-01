@@ -1,4 +1,5 @@
 using Sigma.Domain.Entities;
+using Sigma.Shared.Enums;
 using Xunit;
 
 namespace Sigma.Domain.Tests.Entities;
@@ -131,7 +132,7 @@ public class TenantShould
         // Arrange
         var tenant = new Tenant("Test", "test", "free", 30);
         var workspaceName = "Test Workspace";
-        var platform = "Slack";
+        var platform = Platform.Slack;
 
         // Act
         var workspace = tenant.AddWorkspace(workspaceName, platform);
@@ -152,9 +153,9 @@ public class TenantShould
         var tenant = new Tenant("Test", "test", "enterprise", 365);
 
         // Act
-        var workspace1 = tenant.AddWorkspace("Slack Workspace", "Slack");
-        var workspace2 = tenant.AddWorkspace("Discord Server", "Discord");
-        var workspace3 = tenant.AddWorkspace("WhatsApp Group", "WhatsApp");
+        var workspace1 = tenant.AddWorkspace("Slack Workspace", Platform.Slack);
+        var workspace2 = tenant.AddWorkspace("Discord Server", Platform.Discord);
+        var workspace3 = tenant.AddWorkspace("WhatsApp Group", Platform.WhatsApp);
 
         // Assert
         Assert.Equal(3, tenant.Workspaces.Count);
@@ -310,8 +311,8 @@ public class TenantShould
     {
         // Arrange
         var tenant = new Tenant("Test", "test", "free", 30);
-        tenant.AddWorkspace("Workspace 1", "Slack");
-        tenant.AddWorkspace("Workspace 2", "Discord");
+        tenant.AddWorkspace("Workspace 1", Platform.Slack);
+        tenant.AddWorkspace("Workspace 2", Platform.Discord);
 
         // Act
         var workspaces = tenant.Workspaces;

@@ -9,6 +9,12 @@ public interface IWebhookEventRepository
         string eventId,
         CancellationToken cancellationToken = default);
 
+    Task<WebhookEvent?> GetByExternalIdAsync(
+        string externalEventId,
+        string platform,
+        Guid tenantId,
+        CancellationToken cancellationToken = default);
+
     Task AddAsync(WebhookEvent webhookEvent, CancellationToken cancellationToken = default);
 
     Task UpdateAsync(WebhookEvent webhookEvent, CancellationToken cancellationToken = default);

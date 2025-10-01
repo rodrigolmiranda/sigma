@@ -185,7 +185,8 @@ namespace Sigma.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTime?>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at_utc");
 
                     b.HasKey("Id");
 
@@ -294,8 +295,12 @@ namespace Sigma.Infrastructure.Migrations
                     b.Property<DateTime>("ReceivedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime?>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at_utc");
 
                     b.HasKey("Id");
 
@@ -303,9 +308,9 @@ namespace Sigma.Infrastructure.Migrations
                         .HasDatabaseName("IX_WebhookEvents_Unprocessed")
                         .HasFilter("\"ProcessedAtUtc\" IS NULL");
 
-                    b.HasIndex("Platform", "EventId")
+                    b.HasIndex("Platform", "EventId", "TenantId")
                         .IsUnique()
-                        .HasDatabaseName("IX_WebhookEvents_Platform_EventId");
+                        .HasDatabaseName("IX_WebhookEvents_Platform_EventId_TenantId");
 
                     b.ToTable("WebhookEvents", (string)null);
                 });
@@ -341,10 +346,9 @@ namespace Sigma.Infrastructure.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("name");
 
-                    b.Property<string>("Platform")
-                        .IsRequired()
+                    b.Property<int>("Platform")
                         .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
+                        .HasColumnType("integer")
                         .HasColumnName("platform");
 
                     b.Property<Guid>("TenantId")
@@ -404,7 +408,7 @@ namespace Sigma.Infrastructure.Migrations
 
                             b1.HasKey("MessageId");
 
-                            b1.ToTable("messages");
+                            b1.ToTable("messages", (string)null);
 
                             b1.WithOwner()
                                 .HasForeignKey("MessageId");

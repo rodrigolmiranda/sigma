@@ -2,13 +2,14 @@ using Sigma.Application.Contracts;
 using Sigma.Domain.Contracts;
 using Sigma.Domain.Entities;
 using Sigma.Domain.Repositories;
+using Sigma.Shared.Enums;
 
 namespace Sigma.Application.Commands;
 
 public sealed record CreateWorkspaceCommand(
     Guid TenantId,
     string Name,
-    string Platform,
+    Platform Platform,
     string? ExternalId = null) : ICommand<Guid>;
 
 public sealed class CreateWorkspaceCommandHandler : ICommandHandler<CreateWorkspaceCommand, Guid>

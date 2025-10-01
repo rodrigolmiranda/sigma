@@ -100,7 +100,7 @@ public class EntityPrivateConstructorTests
         instance.PlatformMessageId.Should().Be(string.Empty);
         instance.ChannelId.Should().Be(Guid.Empty);
         instance.TenantId.Should().Be(Guid.Empty);
-        instance.Sender.Should().NotBeNull(); // MessageSender.Unknown()
+        instance.Sender.Should().BeNull(); // EF Core initializes this
         instance.Type.Should().Be(default);
         instance.TimestampUtc.Should().Be(default);
         instance.EditedAtUtc.Should().BeNull();

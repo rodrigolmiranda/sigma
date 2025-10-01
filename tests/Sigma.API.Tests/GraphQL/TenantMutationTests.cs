@@ -58,7 +58,7 @@ public class TenantMutationTests : GraphQLTestBase
                 return msg;
             });
             var fullError = string.Join("\n", errorMessages);
-            Assert.True(false, $"GraphQL errors:\n{fullError}");
+            Assert.Fail($"GraphQL errors:\n{fullError}");
         }
         Assert.NotNull(response.Data);
         Assert.Null(response.Errors);

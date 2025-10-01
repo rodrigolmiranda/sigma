@@ -1,4 +1,5 @@
 using Sigma.Domain.Common;
+using Sigma.Shared.Enums;
 
 namespace Sigma.Domain.Entities;
 
@@ -6,7 +7,7 @@ public class Workspace : Entity
 {
     public Guid TenantId { get; private set; }
     public string Name { get; private set; }
-    public string Platform { get; private set; }
+    public Platform Platform { get; private set; }
     public string? ExternalId { get; private set; }
     public bool IsActive { get; private set; }
     public DateTime? LastSyncAtUtc { get; private set; }
@@ -17,15 +18,15 @@ public class Workspace : Entity
     private Workspace() : base()
     {
         Name = string.Empty;
-        Platform = string.Empty;
+        Platform = Platform.Telegram; // Default to Telegram for EF
         IsActive = true;
     }
 
-    public Workspace(Guid tenantId, string name, string platform) : base()
+    public Workspace(Guid tenantId, string name, Platform platform) : base()
     {
         TenantId = tenantId;
         Name = name ?? throw new ArgumentNullException(nameof(name));
-        Platform = platform ?? throw new ArgumentNullException(nameof(platform));
+        Platform = platform;
         IsActive = true;
     }
 

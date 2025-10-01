@@ -2,7 +2,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Domain\Sigma.Domain.csproj" />
-    <ProjectReference Include="..\Infrastructure\Sigma.Infrastructure.csproj" />
     <ProjectReference Include="..\Shared\Sigma.Shared.csproj" />
   </ItemGroup>
 

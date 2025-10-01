@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Sigma.Shared.Enums;
 
 namespace Sigma.Infrastructure.Persistence;
 
@@ -63,7 +64,7 @@ public class DatabaseInitializer : IHostedService
         context.Tenants.Add(defaultTenant);
 
         // Add a sample workspace
-        var workspace = defaultTenant.AddWorkspace("General", "slack");
+        var workspace = defaultTenant.AddWorkspace("General", Platform.Slack);
         workspace.UpdateExternalId("W-DEFAULT");
 
         // Add a sample channel

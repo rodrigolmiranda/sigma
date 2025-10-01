@@ -69,6 +69,7 @@ public abstract class WebhookHandlerBase
 
     protected async Task<(bool isDuplicate, WebhookEvent? existingEvent)> CheckIdempotencyAsync(
         string platform,
+        Guid tenantId,
         string eventId,
         string eventType,
         string payload)
@@ -77,7 +78,7 @@ public abstract class WebhookHandlerBase
         var webhookEventRepository = scope.ServiceProvider.GetRequiredService<IWebhookEventRepository>();
         var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
-        var existingEvent = await webhookEventRepository.GetByPlatformAndEventIdAsync(platform, eventId);
+        var existingEvent = await webhookEventRepository.GetByExternalIdAsync(eventId, platform, tenantId);
 
         if (existingEvent != null)
         {
@@ -86,7 +87,7 @@ public abstract class WebhookHandlerBase
         }
 
         // Create new event record
-        var webhookEvent = new WebhookEvent(platform, eventId, eventType, payload);
+        var webhookEvent = new WebhookEvent(platform, tenantId, eventId, payload, eventType);
         await webhookEventRepository.AddAsync(webhookEvent);
 
         try
@@ -97,7 +98,7 @@ public abstract class WebhookHandlerBase
         catch (Exception ex) when (ex.Message.Contains("duplicate key") || ex.Message.Contains("unique constraint"))
         {
             // Race condition - another process already inserted this event
-            existingEvent = await webhookEventRepository.GetByPlatformAndEventIdAsync(platform, eventId);
+            existingEvent = await webhookEventRepository.GetByExternalIdAsync(eventId, platform, tenantId);
             return (true, existingEvent);
         }
     }

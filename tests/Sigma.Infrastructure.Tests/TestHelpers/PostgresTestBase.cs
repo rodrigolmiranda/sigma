@@ -33,11 +33,13 @@ public abstract class PostgresTestBase : IAsyncLifetime
         ServiceProvider = services.BuildServiceProvider();
         Context = ServiceProvider.GetRequiredService<SigmaDbContext>();
 
-        // Create the schema
+        // Create the schema - schema name is a GUID, SQL injection not a concern
+#pragma warning disable EF1002
         await Context.Database.ExecuteSqlRawAsync($"CREATE SCHEMA IF NOT EXISTS {_schemaName}");
 
         // Set the search path to use our test schema
         await Context.Database.ExecuteSqlRawAsync($"SET search_path TO {_schemaName}");
+#pragma warning restore EF1002
 
         // Drop and recreate tables to ensure schema is up to date
         await Context.Database.EnsureDeletedAsync();
@@ -51,8 +53,10 @@ public abstract class PostgresTestBase : IAsyncLifetime
         {
             try
             {
-                // Only try to drop schema if context is not disposed
+                // Only try to drop schema if context is not disposed - schema name is a GUID
+#pragma warning disable EF1002
                 await Context.Database.ExecuteSqlRawAsync($"DROP SCHEMA IF EXISTS {_schemaName} CASCADE");
+#pragma warning restore EF1002
             }
             catch (ObjectDisposedException)
             {

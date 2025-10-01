@@ -2,9 +2,11 @@ using HotChocolate;
 using HotChocolate.Authorization;
 using Sigma.Application.Commands;
 using Sigma.Application.Contracts;
+using Sigma.Application.Services;
 using Sigma.Domain.Contracts;
 using Sigma.Domain.Entities;
 using Sigma.Domain.Repositories;
+using Sigma.Shared.Enums;
 
 namespace Sigma.API.GraphQL;
 
@@ -171,13 +173,33 @@ public class Mutation
             Success = true
         };
     }
+
+    [Authorize]
+    public async Task<PostSummaryPayload> PostSummary(
+        PostSummaryInput input,
+        [Service] ISummaryPoster summaryPoster,
+        CancellationToken cancellationToken)
+    {
+        var success = await summaryPoster.PostSummaryAsync(
+            input.TenantId,
+            input.ChannelId,
+            input.Period,
+            cancellationToken);
+
+        return new PostSummaryPayload
+        {
+            Success = success,
+            Errors = success ? null : new[] { new UserError("Failed to post summary", "POSTING_ERROR") }
+        };
+    }
 }
 
 // Input types
 public record CreateTenantInput(string Name, string Slug, string? PlanType, int? RetentionDays);
 public record UpdateTenantPlanInput(Guid TenantId, string PlanType, int RetentionDays);
-public record CreateWorkspaceInput(Guid TenantId, string Name, string Platform, string? ExternalId);
+public record CreateWorkspaceInput(Guid TenantId, string Name, Platform Platform, string? ExternalId);
 public record CreateChannelInput(Guid TenantId, Guid WorkspaceId, string Name, string ExternalId);
+public record PostSummaryInput(Guid TenantId, Guid ChannelId, SummaryPeriod Period);
 
 // Payload types
 public class CreateTenantPayload : Payload
@@ -198,6 +220,10 @@ public class CreateWorkspacePayload : Payload
 public class CreateChannelPayload : Payload
 {
     public Channel? Channel { get; set; }
+}
+
+public class PostSummaryPayload : Payload
+{
 }
 
 // Base payload

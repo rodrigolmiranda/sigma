@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Npgsql;
 using Sigma.Infrastructure.Persistence;
 using Sigma.Shared.Contracts;
+using Sigma.Shared.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,9 +22,9 @@ namespace Sigma.API.Tests.GraphQL;
 public class GraphQLTestBase : IClassFixture<WebApplicationFactory<Program>>, IAsyncLifetime
 {
     private readonly WebApplicationFactory<Program> _baseFactory;
-    protected WebApplicationFactory<Program> _factory;
-    protected HttpClient _client;
-    private string _schemaName;
+    protected WebApplicationFactory<Program> _factory = null!;
+    protected HttpClient _client = null!;
+    private string _schemaName = null!;
     private readonly string _connectionString = "Host=localhost;Port=5433;Database=sigma_test;Username=sigma_test;Password=sigma_test123;Include Error Detail=true";
 
     public GraphQLTestBase(WebApplicationFactory<Program> factory)
@@ -47,7 +48,9 @@ public class GraphQLTestBase : IClassFixture<WebApplicationFactory<Program>>, IA
                                d.ServiceType == typeof(DbContextOptions) ||
                                d.ServiceType == typeof(IDbContextFactory<SigmaDbContext>) ||
                                d.ServiceType == typeof(SigmaDbContext) ||
+#pragma warning disable EF1001 // Internal EF API usage acceptable for test isolation
                                d.ServiceType.IsGenericType && d.ServiceType.GetGenericTypeDefinition() == typeof(Microsoft.EntityFrameworkCore.Internal.IDbContextPool<>) ||
+#pragma warning restore EF1001
                                (d.ServiceType == typeof(Microsoft.Extensions.Hosting.IHostedService) &&
                                 d.ImplementationType == typeof(Sigma.Infrastructure.Persistence.DatabaseInitializer)))
                     .ToList();
@@ -82,8 +85,8 @@ public class GraphQLTestBase : IClassFixture<WebApplicationFactory<Program>>, IA
                 // Register the data source as singleton
                 services.AddSingleton(dataSource);
 
-                // Configure EF Core to use the data source
-                services.AddDbContext<SigmaDbContext>(options =>
+                // Add pooled DbContext factory - this provides both IDbContextFactory and scoped DbContext
+                services.AddPooledDbContextFactory<SigmaDbContext>(options =>
                 {
                     options.UseNpgsql(dataSource)
                     .EnableSensitiveDataLogging()
@@ -106,9 +109,17 @@ public class GraphQLTestBase : IClassFixture<WebApplicationFactory<Program>>, IA
         await createSchemaCommand.ExecuteNonQueryAsync();
 
         // Ensure database is created in the test schema
-        // The scoped factory already set search_path, so EnsureCreatedAsync will work correctly
-        using var scope = _factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<SigmaDbContext>();
+        // Get DbContext from the pooled factory
+        var factory = _factory.Services.GetRequiredService<IDbContextFactory<SigmaDbContext>>();
+        await using var dbContext = await factory.CreateDbContextAsync();
+
+        // Explicitly set search_path for this connection (double-check it's set)
+        // Schema name is a GUID generated in InitializeAsync, so SQL injection is not a concern
+#pragma warning disable EF1002
+        await dbContext.Database.ExecuteSqlRawAsync($"SET search_path TO {_schemaName}");
+#pragma warning restore EF1002
+
+        // Create tables in the test schema
         await dbContext.Database.EnsureCreatedAsync();
     }
 
@@ -161,12 +172,31 @@ public class GraphQLTestBase : IClassFixture<WebApplicationFactory<Program>>, IA
 
     protected async Task SeedDataAsync(Action<SigmaDbContext> seedAction)
     {
-        using var scope = _factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<SigmaDbContext>();
+        // Use the factory to create DbContext - this ensures connection initializer is applied
+        var factory = _factory.Services.GetRequiredService<IDbContextFactory<SigmaDbContext>>();
+        await using var dbContext = await factory.CreateDbContextAsync();
 
-        // Interceptor automatically sets search_path for all connections
+        // Connection initializer automatically sets search_path for all connections
         seedAction(dbContext);
         await dbContext.SaveChangesAsync();
+    }
+
+    protected async Task<T> WithDbContextAsync<T>(Func<SigmaDbContext, Task<T>> action)
+    {
+        // Use the factory to create DbContext - this ensures connection initializer is applied
+        var factory = _factory.Services.GetRequiredService<IDbContextFactory<SigmaDbContext>>();
+        await using var dbContext = await factory.CreateDbContextAsync();
+
+        return await action(dbContext);
+    }
+
+    protected async Task WithDbContextAsync(Func<SigmaDbContext, Task> action)
+    {
+        // Use the factory to create DbContext - this ensures connection initializer is applied
+        var factory = _factory.Services.GetRequiredService<IDbContextFactory<SigmaDbContext>>();
+        await using var dbContext = await factory.CreateDbContextAsync();
+
+        await action(dbContext);
     }
 
     protected class GraphQLResponse<T>

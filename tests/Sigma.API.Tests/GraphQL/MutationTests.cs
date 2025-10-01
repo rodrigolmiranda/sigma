@@ -230,7 +230,7 @@ public class MutationTests
         var input = new CreateWorkspaceInput(
             tenantId,
             "Test Workspace",
-            Platform.Slack.ToString(),
+            Platform.Slack,
             "slack-12345");
 
         var workspaceId = Guid.NewGuid();
@@ -284,7 +284,7 @@ public class MutationTests
         var input = new CreateWorkspaceInput(
             Guid.NewGuid(),
             "Test Workspace",
-            Platform.Discord.ToString(),
+            Platform.Discord,
             "discord-12345");
 
         var error = new Error("DUPLICATE_EXTERNAL_ID", "Workspace with this external ID already exists");
@@ -326,7 +326,7 @@ public class MutationTests
             "C12345");
 
         var channelId = Guid.NewGuid();
-        var workspace = new Workspace(tenantId, "Test Workspace", "Slack");
+        var workspace = new Workspace(tenantId, "Test Workspace", Platform.Slack);
         var channel = workspace.AddChannel(input.Name, input.ExternalId);
 
         _workspaceRepository.Setup(r => r.GetByIdAsync(workspaceId, tenantId, It.IsAny<CancellationToken>()))
@@ -356,11 +356,11 @@ public class MutationTests
     }
 
     [Theory]
-    [InlineData("Slack")]
-    [InlineData("Discord")]
-    [InlineData("WhatsApp")]
-    [InlineData("Telegram")]
-    public async Task CreateWorkspace_WithVariousPlatforms_ShouldHandleCorrectly(string platform)
+    [InlineData(Platform.Slack)]
+    [InlineData(Platform.Discord)]
+    [InlineData(Platform.WhatsApp)]
+    [InlineData(Platform.Telegram)]
+    public async Task CreateWorkspace_WithVariousPlatforms_ShouldHandleCorrectly(Platform platform)
     {
         // Arrange
         var tenantId = Guid.NewGuid();
@@ -368,7 +368,7 @@ public class MutationTests
             tenantId,
             $"{platform} Workspace",
             platform,
-            $"{platform.ToLower()}-12345");
+            $"{platform.ToString().ToLower()}-12345");
 
         var workspaceId = Guid.NewGuid();
         var workspace = new Workspace(
@@ -453,7 +453,7 @@ public class MutationTests
         var input = new CreateWorkspaceInput(
             tenantId,
             "Test Workspace",
-            "Telegram",
+            Platform.Telegram,
             null);
 
         var workspaceId = Guid.NewGuid();
@@ -524,7 +524,7 @@ public class MutationTests
             "general",
             "CH123");
 
-        var workspace = new Workspace(tenantId, "Test Workspace", "Slack");
+        var workspace = new Workspace(tenantId, "Test Workspace", Platform.Slack);
 
         _workspaceRepository.Setup(r => r.GetByIdAsync(workspaceId, tenantId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(workspace);
@@ -623,7 +623,7 @@ public class MutationTests
         var input = new CreateWorkspaceInput(
             tenantId,
             "Test Workspace",
-            "Discord",
+            Platform.Discord,
             "WS123");
 
         var workspaceId = Guid.NewGuid();

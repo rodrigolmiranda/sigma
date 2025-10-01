@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Sigma.Domain.Entities;
 using Sigma.Infrastructure.Persistence;
+using Sigma.Shared.Enums;
 using Xunit;
 
 namespace Sigma.API.Tests.GraphQL;
@@ -75,25 +76,25 @@ public class MutationIntegrationTests : GraphQLTestBase
         Assert.Equal(60, response.Data.CreateTenant.Tenant.RetentionDays);
 
         // Verify in database
-        using var scope = _factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<SigmaDbContext>();
-        var tenant = await dbContext.Tenants.FirstOrDefaultAsync(t => t.Slug.StartsWith("new-test-tenant-"));
-        Assert.NotNull(tenant);
-        Assert.Equal("New Test Tenant", tenant!.Name);
+        await WithDbContextAsync(async dbContext =>
+        {
+            var tenant = await dbContext.Tenants.FirstOrDefaultAsync(t => t.Slug.StartsWith("new-test-tenant-"));
+            Assert.NotNull(tenant);
+            Assert.Equal("New Test Tenant", tenant!.Name);
+        });
     }
 
     [Fact]
     public async Task CreateTenant_WithDuplicateSlug_ShouldReturnError()
     {
         // Arrange
-        using var scope = _factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<SigmaDbContext>();
-
         var uniqueSlug = $"existing-slug-{Guid.NewGuid():N}";
         var existingTenant = new Tenant("Existing Tenant", uniqueSlug, "starter", 30);
 
-        dbContext.Tenants.Add(existingTenant);
-        await dbContext.SaveChangesAsync();
+        await SeedDataAsync(dbContext =>
+        {
+            dbContext.Tenants.Add(existingTenant);
+        });
 
         var mutation = @"
             mutation CreateTenant($input: CreateTenantInput!) {
@@ -234,13 +235,12 @@ public class MutationIntegrationTests : GraphQLTestBase
     public async Task UpdateTenantPlan_WithValidInput_ShouldUpdatePlan()
     {
         // Arrange
-        using var scope = _factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<SigmaDbContext>();
-
         var tenant = new Tenant("Test Tenant", $"test-tenant-update-plan-{Guid.NewGuid():N}", "free", 30);
 
-        dbContext.Tenants.Add(tenant);
-        await dbContext.SaveChangesAsync();
+        await SeedDataAsync(dbContext =>
+        {
+            dbContext.Tenants.Add(tenant);
+        });
 
         var mutation = @"
             mutation UpdateTenantPlan($input: UpdateTenantPlanInput!) {
@@ -283,9 +283,13 @@ public class MutationIntegrationTests : GraphQLTestBase
         Assert.Equal(90, response.Data.UpdateTenantPlan.Tenant.RetentionDays);
 
         // Verify in database
-        dbContext.Entry(tenant).Reload();
-        Assert.Equal("professional", tenant.PlanType);
-        Assert.Equal(90, tenant.RetentionDays);
+        await WithDbContextAsync(async dbContext =>
+        {
+            var updatedTenant = await dbContext.Tenants.FindAsync(tenant.Id);
+            Assert.NotNull(updatedTenant);
+            Assert.Equal("professional", updatedTenant!.PlanType);
+            Assert.Equal(90, updatedTenant.RetentionDays);
+        });
     }
 
     [Fact]
@@ -334,13 +338,12 @@ public class MutationIntegrationTests : GraphQLTestBase
     public async Task UpdateTenantPlan_WithInvalidPlanType_ShouldReturnValidationError()
     {
         // Arrange
-        using var scope = _factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<SigmaDbContext>();
-
         var tenant = new Tenant("Test Tenant", $"test-tenant-invalid-plan-{Guid.NewGuid():N}", "free", 30);
 
-        dbContext.Tenants.Add(tenant);
-        await dbContext.SaveChangesAsync();
+        await SeedDataAsync(dbContext =>
+        {
+            dbContext.Tenants.Add(tenant);
+        });
 
         var mutation = @"
             mutation UpdateTenantPlan($input: UpdateTenantPlanInput!) {
@@ -387,13 +390,12 @@ public class MutationIntegrationTests : GraphQLTestBase
     public async Task CreateWorkspace_WithValidInput_ShouldCreateWorkspace()
     {
         // Arrange
-        using var scope = _factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<SigmaDbContext>();
-
         var tenant = new Tenant("Test Tenant", $"test-tenant-create-ws-{Guid.NewGuid():N}", "free", 30);
 
-        dbContext.Tenants.Add(tenant);
-        await dbContext.SaveChangesAsync();
+        await SeedDataAsync(dbContext =>
+        {
+            dbContext.Tenants.Add(tenant);
+        });
 
         var mutation = @"
             mutation CreateWorkspace($input: CreateWorkspaceInput!) {
@@ -418,7 +420,7 @@ public class MutationIntegrationTests : GraphQLTestBase
             {
                 tenantId = tenant.Id.ToString(),
                 name = "New Workspace",
-                platform = "WhatsApp",
+                platform = "WHATS_APP",
                 externalId = $"ext-workspace-123-{Guid.NewGuid():N}"
             }
         };
@@ -435,14 +437,17 @@ public class MutationIntegrationTests : GraphQLTestBase
         Assert.Null(response.Data.CreateWorkspace.Errors);
         Assert.NotNull(response.Data.CreateWorkspace.Workspace);
         Assert.Equal("New Workspace", response.Data.CreateWorkspace.Workspace.Name);
-        Assert.Equal("WhatsApp", response.Data.CreateWorkspace.Workspace.Platform);
+        Assert.Equal("WHATS_APP", response.Data.CreateWorkspace.Workspace.Platform);
         Assert.StartsWith("ext-workspace-123", response.Data.CreateWorkspace.Workspace.ExternalId);
 
         // Verify in database using the returned workspace ID
         var workspaceId = Guid.Parse(response.Data.CreateWorkspace.Workspace.Id.ToString());
-        var workspace = await dbContext.Workspaces.FirstOrDefaultAsync(w => w.Id == workspaceId);
-        Assert.NotNull(workspace);
-        Assert.Equal(tenant.Id, workspace!.TenantId);
+        await WithDbContextAsync(async dbContext =>
+        {
+            var workspace = await dbContext.Workspaces.FirstOrDefaultAsync(w => w.Id == workspaceId);
+            Assert.NotNull(workspace);
+            Assert.Equal(tenant.Id, workspace!.TenantId);
+        });
     }
 
     [Fact]
@@ -469,7 +474,7 @@ public class MutationIntegrationTests : GraphQLTestBase
             {
                 tenantId = Guid.NewGuid().ToString(),
                 name = "Orphan Workspace",
-                platform = "Telegram",
+                platform = "TELEGRAM",
                 externalId = $"ext-123-{Guid.NewGuid():N}"
             }
         };
@@ -492,16 +497,15 @@ public class MutationIntegrationTests : GraphQLTestBase
     public async Task CreateWorkspace_WithDuplicateExternalId_ShouldReturnError()
     {
         // Arrange
-        using var scope = _factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<SigmaDbContext>();
-
         var uniqueExtId = $"duplicate-ext-id-{Guid.NewGuid():N}";
         var tenant = new Tenant("Test Tenant", $"test-tenant-dup-ws-{Guid.NewGuid():N}", "free", 30);
-        var existingWorkspace = tenant.AddWorkspace("Existing Workspace", "WhatsApp");
+        var existingWorkspace = tenant.AddWorkspace("Existing Workspace", Platform.WhatsApp);
         existingWorkspace.UpdateExternalId(uniqueExtId);
 
-        dbContext.Tenants.Add(tenant);
-        await dbContext.SaveChangesAsync();
+        await SeedDataAsync(dbContext =>
+        {
+            dbContext.Tenants.Add(tenant);
+        });
 
         var mutation = @"
             mutation CreateWorkspace($input: CreateWorkspaceInput!) {
@@ -523,7 +527,7 @@ public class MutationIntegrationTests : GraphQLTestBase
             {
                 tenantId = tenant.Id.ToString(),
                 name = "Another Workspace",
-                platform = "WhatsApp",
+                platform = "WHATS_APP",
                 externalId = uniqueExtId
             }
         };
@@ -565,15 +569,14 @@ public class MutationIntegrationTests : GraphQLTestBase
     public async Task CreateChannel_WithValidInput_ShouldCreateChannel()
     {
         // Arrange
-        using var scope = _factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<SigmaDbContext>();
-
         var tenant = new Tenant("Test Tenant", $"test-tenant-create-ch-{Guid.NewGuid():N}", "free", 30);
-        var workspace = tenant.AddWorkspace("Test Workspace", "Telegram");
+        var workspace = tenant.AddWorkspace("Test Workspace", Platform.Telegram);
         workspace.UpdateExternalId($"ext-workspace-{Guid.NewGuid():N}");
 
-        dbContext.Tenants.Add(tenant);
-        await dbContext.SaveChangesAsync();
+        await SeedDataAsync(dbContext =>
+        {
+            dbContext.Tenants.Add(tenant);
+        });
 
         var mutation = @"
             mutation CreateChannel($input: CreateChannelInput!) {
@@ -618,22 +621,24 @@ public class MutationIntegrationTests : GraphQLTestBase
 
         // Verify in database using the returned channel ID
         var channelId = Guid.Parse(response.Data.CreateChannel.Channel.Id.ToString());
-        var channel = await dbContext.Channels.FirstOrDefaultAsync(c => c.Id == channelId);
-        Assert.NotNull(channel);
-        Assert.Equal(workspace.Id, channel!.WorkspaceId);
+        await WithDbContextAsync(async dbContext =>
+        {
+            var channel = await dbContext.Channels.FirstOrDefaultAsync(c => c.Id == channelId);
+            Assert.NotNull(channel);
+            Assert.Equal(workspace.Id, channel!.WorkspaceId);
+        });
     }
 
     [Fact]
     public async Task CreateChannel_WithNonExistentWorkspace_ShouldReturnError()
     {
         // Arrange
-        using var scope = _factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<SigmaDbContext>();
-
         var tenant = new Tenant("Test Tenant", $"test-tenant-orphan-ch-{Guid.NewGuid():N}", "free", 30);
 
-        dbContext.Tenants.Add(tenant);
-        await dbContext.SaveChangesAsync();
+        await SeedDataAsync(dbContext =>
+        {
+            dbContext.Tenants.Add(tenant);
+        });
 
         var mutation = @"
             mutation CreateChannel($input: CreateChannelInput!) {
@@ -678,22 +683,21 @@ public class MutationIntegrationTests : GraphQLTestBase
     public async Task CreateChannel_WithDuplicateExternalId_ShouldReturnError()
     {
         // Arrange
-        using var scope = _factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<SigmaDbContext>();
-
         var uniqueChannelId = $"duplicate-channel-id-{Guid.NewGuid():N}";
         var tenant = new Tenant("Test Tenant", $"test-tenant-dup-ch-{Guid.NewGuid():N}", "free", 30);
-        var workspace = tenant.AddWorkspace("Test Workspace", "WhatsApp");
+        var workspace = tenant.AddWorkspace("Test Workspace", Platform.WhatsApp);
         workspace.UpdateExternalId($"ext-workspace-{Guid.NewGuid():N}");
 
         var existingChannel = workspace.AddChannel("Existing Channel", uniqueChannelId);
 
-        dbContext.Tenants.Add(tenant);
-        await dbContext.SaveChangesAsync();
+        await SeedDataAsync(dbContext =>
+        {
+            dbContext.Tenants.Add(tenant);
+            dbContext.SaveChanges();
 
-        // Set TenantId shadow property on channel (not set automatically through aggregate)
-        dbContext.Entry(existingChannel).Property("TenantId").CurrentValue = tenant.Id;
-        await dbContext.SaveChangesAsync();
+            // Set TenantId shadow property on channel (not set automatically through aggregate)
+            dbContext.Entry(existingChannel).Property("TenantId").CurrentValue = tenant.Id;
+        });
 
         var mutation = @"
             mutation CreateChannel($input: CreateChannelInput!) {
@@ -753,16 +757,15 @@ public class MutationIntegrationTests : GraphQLTestBase
     public async Task CreateChannel_WithMismatchedTenantAndWorkspace_ShouldReturnError()
     {
         // Arrange
-        using var scope = _factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<SigmaDbContext>();
-
         var tenant1 = new Tenant("Tenant 1", $"tenant-1-mismatch-{Guid.NewGuid():N}", "free", 30);
         var tenant2 = new Tenant("Tenant 2", $"tenant-2-mismatch-{Guid.NewGuid():N}", "free", 30);
-        var workspace = tenant2.AddWorkspace("Tenant2 Workspace", "Telegram");
+        var workspace = tenant2.AddWorkspace("Tenant2 Workspace", Platform.Telegram);
         workspace.UpdateExternalId($"ext-workspace-t2-{Guid.NewGuid():N}");
 
-        dbContext.Tenants.AddRange(tenant1, tenant2);
-        await dbContext.SaveChangesAsync();
+        await SeedDataAsync(dbContext =>
+        {
+            dbContext.Tenants.AddRange(tenant1, tenant2);
+        });
 
         var mutation = @"
             mutation CreateChannel($input: CreateChannelInput!) {

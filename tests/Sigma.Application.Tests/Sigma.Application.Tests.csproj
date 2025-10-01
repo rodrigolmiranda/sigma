@@ -41,6 +41,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Application\Sigma.Application.csproj" />
     <ProjectReference Include="..\..\src\Domain\Sigma.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Infrastructure\Sigma.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

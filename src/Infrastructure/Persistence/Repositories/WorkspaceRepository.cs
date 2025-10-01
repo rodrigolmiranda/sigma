@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Sigma.Domain.Entities;
 using Sigma.Domain.Repositories;
+using Sigma.Shared.Enums;
 
 namespace Sigma.Infrastructure.Persistence.Repositories;
 
@@ -29,7 +30,7 @@ public class WorkspaceRepository : IWorkspaceRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<Workspace?> GetByExternalIdAsync(string externalId, string platform, Guid tenantId, CancellationToken cancellationToken = default)
+    public async Task<Workspace?> GetByExternalIdAsync(string externalId, Platform platform, Guid tenantId, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrEmpty(externalId))
         {

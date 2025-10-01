@@ -9,6 +9,7 @@ using Moq;
 using Sigma.Domain.Contracts;
 using Sigma.Infrastructure.Persistence;
 using Sigma.Infrastructure.Tests.TestHelpers;
+using Sigma.Shared.Enums;
 using Xunit;
 
 namespace Sigma.Infrastructure.Tests.Persistence;
@@ -392,24 +393,7 @@ public class UnitOfWorkTests : PostgresTestBase
             await _unitOfWork.SaveChangesAsync());
     }
 
-    [Fact(Skip = "In-memory database doesn't enforce unique constraints")]
-    public async Task SaveEntitiesAsync_WithFailure_ShouldReturnFalse()
-    {
-        // Arrange
-        var tenant1 = new Domain.Entities.Tenant("Test1", "dup-slug", "free", 30);
-        var tenant2 = new Domain.Entities.Tenant("Test2", "dup-slug", "free", 30);
-
-        Context.Tenants.Add(tenant1);
-        await _unitOfWork.SaveEntitiesAsync();
-
-        Context.Tenants.Add(tenant2);
-
-        // Act
-        var result = await _unitOfWork.SaveEntitiesAsync();
-
-        // Assert
-        Assert.False(result);
-    }
+    // NOTE: This test moved to DatabaseConstraintTests.cs to use real database constraints
 
     [Fact]
     public async Task Transaction_NestedTransactions_ShouldNotCreateMultiple()
@@ -500,7 +484,7 @@ public class UnitOfWorkTests : PostgresTestBase
         Context.Tenants.Add(tenant);
         await _unitOfWork.SaveChangesAsync();
 
-        var workspace = tenant.AddWorkspace("Workspace", "Test");
+        var workspace = tenant.AddWorkspace("Workspace", Platform.Slack);
         await _unitOfWork.SaveChangesAsync();
 
         var channel = workspace.AddChannel("Channel", "C001");

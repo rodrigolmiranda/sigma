@@ -1,4 +1,5 @@
 using Sigma.Domain.Common;
+using Sigma.Shared.Enums;
 
 namespace Sigma.Domain.Entities;
 
@@ -64,7 +65,7 @@ public class Tenant : Entity
         IsActive = true;
     }
 
-    public Workspace AddWorkspace(string name, string platform)
+    public Workspace AddWorkspace(string name, Platform platform)
     {
         var workspace = new Workspace(Id, name, platform);
         _workspaces.Add(workspace);

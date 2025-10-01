@@ -36,6 +36,8 @@ Welcome to the consolidated, scope-aligned SIGMA documentation. This wiki replac
 30. [Dashboards Spec](dashboards_spec.md)
 31. [Retention Policies](retention_policies.md)
 32. Playbooks: [Connectors](playbook_connectors.md), [Polling](playbook_polling_module.md), [Guardian](playbook_guardian_module.md), [RAG (Ask‑DB)](playbook_rag_module.md), [Broadcasts](playbook_broadcasts.md)
+   - 🚀 **Quick Start:** [5-Min Connector Test](quick_test_connectors.md)
+   - 📱 **Setup Guides:** [Telegram](setup_guide_telegram.md) | [WhatsApp](setup_guide_whatsapp.md)
 33. Runbooks: [Ingest Lag](runbook_ingest_lag.md), [Queue Saturation](runbook_queue_saturation.md), [Vector Store Bloat](runbook_vector_store_bloat.md), [Cost Spike](runbook_cost_spike.md)
 34. [Testing Strategy](testing_strategy.md)
 35. [Contract Testing](contract_testing.md)

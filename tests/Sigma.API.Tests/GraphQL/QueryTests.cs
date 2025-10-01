@@ -132,8 +132,8 @@ public class QueryTests
         var tenantId = Guid.NewGuid();
         var workspaces = new List<Workspace>
         {
-            new Workspace(tenantId, "Workspace 1", "Slack"),
-            new Workspace(tenantId, "Workspace 2", "Discord")
+            new Workspace(tenantId, "Workspace 1", Platform.Slack),
+            new Workspace(tenantId, "Workspace 2", Platform.Discord)
         };
 
         _workspaceRepository.Setup(r => r.GetByTenantIdAsync(tenantId, It.IsAny<CancellationToken>()))
@@ -157,7 +157,7 @@ public class QueryTests
         // Arrange
         var workspaceId = Guid.NewGuid();
         var tenantId = Guid.NewGuid();
-        var workspace = new Workspace(tenantId, "Test Workspace", "Telegram");
+        var workspace = new Workspace(tenantId, "Test Workspace", Platform.Telegram);
 
         _workspaceRepository.Setup(r => r.GetByIdAsync(workspaceId, tenantId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(workspace);
@@ -168,7 +168,7 @@ public class QueryTests
         // Assert
         Assert.NotNull(result);
         Assert.Equal("Test Workspace", result.Name);
-        Assert.Equal("Telegram", result.Platform);
+        Assert.Equal(Platform.Telegram, result.Platform);
         _workspaceRepository.Verify(r => r.GetByIdAsync(workspaceId, tenantId, It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -678,7 +678,7 @@ public class QueryTests
         var workspaces = new List<Workspace>();
         for (int i = 0; i < 100; i++)
         {
-            workspaces.Add(new Workspace(tenantId, $"Workspace {i}", "Slack"));
+            workspaces.Add(new Workspace(tenantId, $"Workspace {i}", Platform.Slack));
         }
 
         _workspaceRepository.Setup(r => r.GetByTenantIdAsync(tenantId, It.IsAny<CancellationToken>()))
@@ -698,7 +698,7 @@ public class QueryTests
         // Arrange
         var workspaceId = Guid.NewGuid();
         var tenantId = Guid.NewGuid();
-        var workspace = new Workspace(tenantId, "Large Workspace", "Discord");
+        var workspace = new Workspace(tenantId, "Large Workspace", Platform.Discord);
         var channels = new List<Channel>();
 
         for (int i = 0; i < 50; i++)

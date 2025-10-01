@@ -24,6 +24,20 @@ public class WebhookEventRepository : IWebhookEventRepository
                 cancellationToken);
     }
 
+    public async Task<WebhookEvent?> GetByExternalIdAsync(
+        string externalEventId,
+        string platform,
+        Guid tenantId,
+        CancellationToken cancellationToken = default)
+    {
+        return await _context.WebhookEvents
+            .FirstOrDefaultAsync(
+                we => we.EventId == externalEventId
+                   && we.Platform == platform
+                   && we.TenantId == tenantId,
+                cancellationToken);
+    }
+
     public async Task AddAsync(WebhookEvent webhookEvent, CancellationToken cancellationToken = default)
     {
         await _context.WebhookEvents.AddAsync(webhookEvent, cancellationToken);

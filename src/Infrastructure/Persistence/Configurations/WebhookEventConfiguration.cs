@@ -16,6 +16,9 @@ public class WebhookEventConfiguration : IEntityTypeConfiguration<WebhookEvent>
             .HasMaxLength(50)
             .IsRequired();
 
+        builder.Property(x => x.TenantId)
+            .IsRequired();
+
         builder.Property(x => x.EventId)
             .HasMaxLength(255)
             .IsRequired();
@@ -38,10 +41,10 @@ public class WebhookEventConfiguration : IEntityTypeConfiguration<WebhookEvent>
             .HasMaxLength(4000)
             .IsRequired(false);
 
-        // Unique index to ensure idempotency
-        builder.HasIndex(x => new { x.Platform, x.EventId })
+        // Unique index to ensure idempotency per tenant
+        builder.HasIndex(x => new { x.Platform, x.EventId, x.TenantId })
             .IsUnique()
-            .HasDatabaseName("IX_WebhookEvents_Platform_EventId");
+            .HasDatabaseName("IX_WebhookEvents_Platform_EventId_TenantId");
 
         // Index for querying unprocessed events
         builder.HasIndex(x => x.ProcessedAtUtc)

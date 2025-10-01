@@ -8,6 +8,7 @@ using Moq;
 using Sigma.Domain.Common;
 using Sigma.Domain.Contracts;
 using Sigma.Domain.Entities;
+using Sigma.Shared.Enums;
 using Sigma.Infrastructure.Tests.TestHelpers;
 using Sigma.Domain.ValueObjects;
 using Sigma.Infrastructure.Persistence;
@@ -132,7 +133,7 @@ public class SigmaDbContextTests : IDisposable
         _context.Database.EnsureCreated();
 
         var tenant = new Tenant("Test Tenant", "test-tenant", "free", 30);
-        var workspace = tenant.AddWorkspace("Test Workspace", "Slack");
+        var workspace = tenant.AddWorkspace("Test Workspace", Platform.Slack);
         _context.Tenants.Add(tenant);
 
         // Act
@@ -163,8 +164,8 @@ public class SigmaDbContextTests : IDisposable
         _context.Tenants.Add(tenant2);
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var workspace1 = tenant1.AddWorkspace("Workspace 1", "Slack");
-        var workspace2 = tenant2.AddWorkspace("Workspace 2", "Discord");
+        var workspace1 = tenant1.AddWorkspace("Workspace 1", Platform.Slack);
+        var workspace2 = tenant2.AddWorkspace("Workspace 2", Platform.Discord);
 
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
@@ -195,8 +196,8 @@ public class SigmaDbContextTests : IDisposable
         _context.Tenants.Add(tenant2);
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var workspace1 = tenant1.AddWorkspace("Workspace 1", "Slack");
-        var workspace2 = tenant2.AddWorkspace("Workspace 2", "Discord");
+        var workspace1 = tenant1.AddWorkspace("Workspace 1", Platform.Slack);
+        var workspace2 = tenant2.AddWorkspace("Workspace 2", Platform.Discord);
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         // Act - Query should not be filtered when tenant ID is empty
@@ -220,7 +221,7 @@ public class SigmaDbContextTests : IDisposable
         typeof(Entity).GetProperty("Id")!.SetValue(tenant, _tenantId);
         _context.Tenants.Add(tenant);
 
-        var workspace = tenant.AddWorkspace("Test Workspace", "Slack");
+        var workspace = tenant.AddWorkspace("Test Workspace", Platform.Slack);
         var channel = workspace.AddChannel("general", "C123456");
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
@@ -288,7 +289,7 @@ public class SigmaDbContextTests : IDisposable
         _context.Tenants.Add(tenant1);
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var workspace1 = tenant1.AddWorkspace("Workspace 1", "Slack");
+        var workspace1 = tenant1.AddWorkspace("Workspace 1", Platform.Slack);
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         var channel1 = workspace1.AddChannel("general", "C001");
@@ -360,7 +361,7 @@ public class SigmaDbContextTests : IDisposable
         _context.Tenants.Add(tenant);
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var workspace = tenant.AddWorkspace("Test Workspace", "Slack");
+        var workspace = tenant.AddWorkspace("Test Workspace", Platform.Slack);
         var channel = workspace.AddChannel("general", "C123");
         await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
@@ -431,7 +432,7 @@ public class SigmaDbContextTests : IDisposable
         _context.Database.EnsureCreated();
 
         var tenant = new Tenant("Test Tenant", "test-tenant", "free", 30);
-        var workspace = tenant.AddWorkspace("Test Workspace", "Test");
+        var workspace = tenant.AddWorkspace("Test Workspace", Platform.Slack);
         var channel = workspace.AddChannel("Test Channel", "C001");
 
         _context.Tenants.Add(tenant);
@@ -448,30 +449,7 @@ public class SigmaDbContextTests : IDisposable
         Assert.NotNull(await _context.Channels.FindAsync(new object[] { channel.Id }, TestContext.Current.CancellationToken));
     }
 
-    [Fact(Skip = "In-memory database doesn't enforce unique constraints")]
-    public async Task SaveChangesAsync_WithFailure_ShouldRollbackChanges()
-    {
-        // Arrange
-        _context = new SigmaDbContext(_options);
-        _context.TenantContext = _tenantContextMock.Object;
-        _context.Database.EnsureCreated();
-
-        var tenant1 = new Tenant("Tenant1", "tenant-1", "free", 30);
-        var tenant2 = new Tenant("Tenant2", "tenant-1", "free", 30); // Duplicate slug
-
-        _context.Tenants.Add(tenant1);
-        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
-
-        _context.Tenants.Add(tenant2);
-
-        // Act & Assert
-        await Assert.ThrowsAnyAsync<Exception>(async () =>
-            await _context.SaveChangesAsync(TestContext.Current.CancellationToken));
-
-        // Verify first tenant still exists
-        var existingTenant = await _context.Tenants.FindAsync(new object[] { tenant1.Id }, TestContext.Current.CancellationToken);
-        Assert.NotNull(existingTenant);
-    }
+    // NOTE: This test moved to SigmaDbContextPostgresTests.cs to use real database constraints
 
     [Fact]
     public async Task SaveChangesAsync_WithNoChanges_ShouldReturnZero()
@@ -488,27 +466,7 @@ public class SigmaDbContextTests : IDisposable
         Assert.Equal(0, changes);
     }
 
-    [Fact(Skip = "In-memory database doesn't enforce unique constraints")]
-    public async Task ModelConfiguration_ShouldEnforceTenantIndexes()
-    {
-        // Arrange
-        _context = new SigmaDbContext(_options);
-        _context.TenantContext = _tenantContextMock.Object;
-        _context.Database.EnsureCreated();
-
-        var duplicateSlug = $"test-slug-{Guid.NewGuid()}";
-        var tenant1 = new Tenant("Test1", duplicateSlug, "free", 30);
-        var tenant2 = new Tenant("Test2", duplicateSlug, "free", 30); // Same slug
-
-        _context.Tenants.Add(tenant1);
-        await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
-
-        _context.Tenants.Add(tenant2);
-
-        // Act & Assert - Should throw due to unique constraint on Slug
-        await Assert.ThrowsAnyAsync<Exception>(async () =>
-            await _context.SaveChangesAsync(TestContext.Current.CancellationToken));
-    }
+    // NOTE: This test moved to SigmaDbContextPostgresTests.cs to use real database constraints
 
     [Fact]
     public async Task WorkspaceChannelRelationship_ShouldCascadeDelete()
@@ -519,7 +477,7 @@ public class SigmaDbContextTests : IDisposable
         _context.Database.EnsureCreated();
 
         var tenant = new Tenant("Test", "test", "free", 30);
-        var workspace = tenant.AddWorkspace("Workspace", "Test");
+        var workspace = tenant.AddWorkspace("Workspace", Platform.Slack);
         var channel = workspace.AddChannel("Channel", "C001");
 
         _context.Tenants.Add(tenant);
@@ -580,8 +538,8 @@ public class SigmaDbContextTests : IDisposable
 
         var tenant = new Tenant("Test Tenant", $"test-tenant-{Guid.NewGuid()}", "free", 30);
 
-        var workspace1 = new Workspace(tenantId, "Workspace 1", "slack");
-        var workspace2 = new Workspace(tenantId, "Workspace 2", "discord");
+        var workspace1 = new Workspace(tenantId, "Workspace 1", Platform.Slack);
+        var workspace2 = new Workspace(tenantId, "Workspace 2", Platform.Discord);
 
         _context.Tenants.Add(tenant);
         _context.Workspaces.AddRange(workspace1, workspace2);
@@ -674,7 +632,7 @@ public class SigmaDbContextTimestampTests : IDisposable
         await using var context = new SigmaDbContext(options);
         context.TenantContext = tenantContext.Object;
 
-        var workspace = new Workspace(tenantId, "To Delete", "slack");
+        var workspace = new Workspace(tenantId, "To Delete", Platform.Slack);
         workspace.UpdateExternalId("W789");
 
         context.Workspaces.Add(workspace);
@@ -793,10 +751,10 @@ public class SigmaDbContextTimestampTests : IDisposable
         // Add initial data
         var tenant = new Tenant("Test Tenant", "test-tenant", "free", 30);
 
-        var workspace1 = new Workspace(tenantId, "Workspace 1", "slack");
+        var workspace1 = new Workspace(tenantId, "Workspace 1", Platform.Slack);
         workspace1.UpdateExternalId("W1");
 
-        var workspace2 = new Workspace(tenantId, "Workspace 2", "discord");
+        var workspace2 = new Workspace(tenantId, "Workspace 2", Platform.Discord);
         workspace2.UpdateExternalId("W2");
 
         context.Tenants.Add(tenant);
@@ -806,7 +764,7 @@ public class SigmaDbContextTimestampTests : IDisposable
         // Act - Mixed operations
         context.Entry(workspace1).State = EntityState.Modified; // Mark as modified
         context.Workspaces.Remove(workspace2); // Delete
-        var workspace3 = new Workspace(tenantId, "Workspace 3", "telegram"); // Add new
+        var workspace3 = new Workspace(tenantId, "Workspace 3", Platform.Telegram); // Add new
         workspace3.UpdateExternalId("W3");
         context.Workspaces.Add(workspace3);
 

@@ -5,6 +5,7 @@ namespace Sigma.Domain.Entities;
 public class WebhookEvent : Entity
 {
     public string Platform { get; private set; } = string.Empty;
+    public Guid TenantId { get; private set; }
     public string EventId { get; private set; } = string.Empty;
     public string EventType { get; private set; } = string.Empty;
     public string Payload { get; private set; } = string.Empty;
@@ -16,12 +17,14 @@ public class WebhookEvent : Entity
 
     public WebhookEvent(
         string platform,
+        Guid tenantId,
         string eventId,
-        string eventType,
-        string payload)
+        string payload,
+        string eventType = "message")
         : base()
     {
         Platform = platform ?? throw new ArgumentNullException(nameof(platform));
+        TenantId = tenantId;
         EventId = eventId ?? throw new ArgumentNullException(nameof(eventId));
         EventType = eventType ?? throw new ArgumentNullException(nameof(eventType));
         Payload = payload ?? throw new ArgumentNullException(nameof(payload));

@@ -1,6 +1,7 @@
 using Sigma.Domain.Entities;
 using Sigma.Domain.ValueObjects;
 using Sigma.Infrastructure.Persistence.Repositories;
+using Sigma.Shared.Enums;
 using Xunit;
 
 namespace Sigma.Infrastructure.Tests.Repositories;
@@ -21,7 +22,7 @@ public class MessageRepositoryTests : IDisposable
         var tenant = new Tenant("Test Tenant", "test-tenant", "free", 30);
         _context.Tenants.Add(tenant);
 
-        var workspace = new Workspace(tenant.Id, "Test Workspace", "slack");
+        var workspace = new Workspace(tenant.Id, "Test Workspace", Platform.Slack);
         workspace.UpdateExternalId("ext-ws-1");
         _context.Workspaces.Add(workspace);
 

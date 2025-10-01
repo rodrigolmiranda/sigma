@@ -1,6 +1,7 @@
 using Sigma.Domain.Common;
 using Sigma.Domain.Entities;
 using Sigma.Infrastructure.Persistence.Repositories;
+using Sigma.Shared.Enums;
 using Xunit;
 
 namespace Sigma.Infrastructure.Tests.Repositories;
@@ -23,7 +24,7 @@ public class ChannelRepositoryTests : IDisposable
         typeof(Entity).GetProperty("Id")!.SetValue(tenant, _tenantId);
         _context.Tenants.Add(tenant);
 
-        var workspace = new Workspace(_tenantId, "Test Workspace", "slack");
+        var workspace = new Workspace(_tenantId, "Test Workspace", Platform.Slack);
         workspace.UpdateExternalId("ext-ws-1");
         _context.Workspaces.Add(workspace);
         _workspaceId = workspace.Id;

@@ -1,4 +1,5 @@
 using Sigma.Domain.Entities;
+using Sigma.Shared.Enums;
 using Xunit;
 
 namespace Sigma.Domain.Tests.Entities;
@@ -11,7 +12,7 @@ public class WorkspaceShould
         // Arrange
         var tenantId = Guid.NewGuid();
         var name = "Test Workspace";
-        var platform = "Discord";
+        var platform = Platform.Discord;
 
         // Act
         var workspace = new Workspace(tenantId, name, platform);
@@ -32,22 +33,16 @@ public class WorkspaceShould
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() =>
-            new Workspace(Guid.NewGuid(), null!, "platform"));
+            new Workspace(Guid.NewGuid(), null!, Platform.Slack));
     }
 
-    [Fact]
-    public void ThrowWhenCreatedWithNullPlatform()
-    {
-        // Act & Assert
-        Assert.Throws<ArgumentNullException>(() =>
-            new Workspace(Guid.NewGuid(), "name", null!));
-    }
+    // Test removed - Platform is now an enum (value type), cannot be null
 
     [Fact]
     public void UpdateExternalIdSuccessfully()
     {
         // Arrange
-        var workspace = new Workspace(Guid.NewGuid(), "Test", "Slack");
+        var workspace = new Workspace(Guid.NewGuid(), "Test", Platform.Slack);
         var externalId = "T123456";
 
         // Act
@@ -61,7 +56,7 @@ public class WorkspaceShould
     public void UpdateLastSyncSuccessfully()
     {
         // Arrange
-        var workspace = new Workspace(Guid.NewGuid(), "Test", "Slack");
+        var workspace = new Workspace(Guid.NewGuid(), "Test", Platform.Slack);
         Assert.Null(workspace.LastSyncAtUtc);
 
         // Act
@@ -77,7 +72,7 @@ public class WorkspaceShould
     public void DeactivateAndActivateSuccessfully()
     {
         // Arrange
-        var workspace = new Workspace(Guid.NewGuid(), "Test", "Slack");
+        var workspace = new Workspace(Guid.NewGuid(), "Test", Platform.Slack);
         Assert.True(workspace.IsActive);
 
         // Act - Deactivate
@@ -97,7 +92,7 @@ public class WorkspaceShould
     public void AddChannelSuccessfully()
     {
         // Arrange
-        var workspace = new Workspace(Guid.NewGuid(), "Test", "Slack");
+        var workspace = new Workspace(Guid.NewGuid(), "Test", Platform.Slack);
         var channelName = "general";
         var externalId = "C123456";
 
@@ -117,7 +112,7 @@ public class WorkspaceShould
     public void AddMultipleChannels()
     {
         // Arrange
-        var workspace = new Workspace(Guid.NewGuid(), "Test", "Slack");
+        var workspace = new Workspace(Guid.NewGuid(), "Test", Platform.Slack);
 
         // Act
         var channel1 = workspace.AddChannel("general", "C1");
@@ -135,7 +130,7 @@ public class WorkspaceShould
     public void UpdateExternalId_MultipleTimes_ShouldUpdateCorrectly()
     {
         // Arrange
-        var workspace = new Workspace(Guid.NewGuid(), "Test", "Slack");
+        var workspace = new Workspace(Guid.NewGuid(), "Test", Platform.Slack);
 
         // Act
         workspace.UpdateExternalId("EXT001");
@@ -152,7 +147,7 @@ public class WorkspaceShould
     public void UpdateExternalId_WithNull_ShouldSetToNull()
     {
         // Arrange
-        var workspace = new Workspace(Guid.NewGuid(), "Test", "Slack");
+        var workspace = new Workspace(Guid.NewGuid(), "Test", Platform.Slack);
         workspace.UpdateExternalId("EXT001");
         Assert.Equal("EXT001", workspace.ExternalId);
 
@@ -167,7 +162,7 @@ public class WorkspaceShould
     public void UpdateExternalId_WithEmptyString_ShouldSetToEmpty()
     {
         // Arrange
-        var workspace = new Workspace(Guid.NewGuid(), "Test", "Slack");
+        var workspace = new Workspace(Guid.NewGuid(), "Test", Platform.Slack);
 
         // Act
         workspace.UpdateExternalId("");
@@ -180,7 +175,7 @@ public class WorkspaceShould
     public void UpdateLastSync_MultipleTimes_ShouldUpdateCorrectly()
     {
         // Arrange
-        var workspace = new Workspace(Guid.NewGuid(), "Test", "Slack");
+        var workspace = new Workspace(Guid.NewGuid(), "Test", Platform.Slack);
         Assert.Null(workspace.LastSyncAtUtc);
 
         // Act & Assert
@@ -205,7 +200,7 @@ public class WorkspaceShould
     public void UpdateExternalId_ShouldUpdateTimestamp()
     {
         // Arrange
-        var workspace = new Workspace(Guid.NewGuid(), "Test", "Slack");
+        var workspace = new Workspace(Guid.NewGuid(), "Test", Platform.Slack);
 
         // Act
         System.Threading.Thread.Sleep(10);
@@ -218,7 +213,7 @@ public class WorkspaceShould
     public void UpdateLastSync_ShouldUpdateTimestamp()
     {
         // Arrange
-        var workspace = new Workspace(Guid.NewGuid(), "Test", "Slack");
+        var workspace = new Workspace(Guid.NewGuid(), "Test", Platform.Slack);
 
         // Act
         System.Threading.Thread.Sleep(10);
@@ -231,7 +226,7 @@ public class WorkspaceShould
     public void Deactivate_WhenAlreadyInactive_ShouldRemainInactive()
     {
         // Arrange
-        var workspace = new Workspace(Guid.NewGuid(), "Test", "Slack");
+        var workspace = new Workspace(Guid.NewGuid(), "Test", Platform.Slack);
         workspace.Deactivate();
         Assert.False(workspace.IsActive);
         var firstDeactivationTime = workspace.UpdatedAtUtc;
@@ -248,7 +243,7 @@ public class WorkspaceShould
     public void Activate_WhenAlreadyActive_ShouldRemainActive()
     {
         // Arrange
-        var workspace = new Workspace(Guid.NewGuid(), "Test", "Slack");
+        var workspace = new Workspace(Guid.NewGuid(), "Test", Platform.Slack);
         Assert.True(workspace.IsActive);
         var originalUpdateTime = workspace.UpdatedAtUtc;
 
@@ -264,36 +259,33 @@ public class WorkspaceShould
     public void Constructor_WithEmptyTenantId_ShouldCreateSuccessfully()
     {
         // Act
-        var workspace = new Workspace(Guid.Empty, "Test", "Slack");
+        var workspace = new Workspace(Guid.Empty, "Test", Platform.Slack);
 
         // Assert
         Assert.Equal(Guid.Empty, workspace.TenantId);
         Assert.Equal("Test", workspace.Name);
-        Assert.Equal("Slack", workspace.Platform);
+        Assert.Equal(Platform.Slack, workspace.Platform);
     }
 
     [Fact]
-    public void Constructor_WithEmptyStrings_ShouldCreateSuccessfully()
+    public void Constructor_WithEmptyName_ShouldCreateSuccessfully()
     {
         // Act
-        var workspace1 = new Workspace(Guid.NewGuid(), "", "Slack");
-        var workspace2 = new Workspace(Guid.NewGuid(), "Test", "");
+        var workspace = new Workspace(Guid.NewGuid(), "", Platform.Slack);
 
         // Assert
-        Assert.Equal("", workspace1.Name);
-        Assert.Equal("Slack", workspace1.Platform);
-        Assert.Equal("Test", workspace2.Name);
-        Assert.Equal("", workspace2.Platform);
+        Assert.Equal("", workspace.Name);
+        Assert.Equal(Platform.Slack, workspace.Platform);
     }
 
     [Theory]
-    [InlineData("Slack")]
-    [InlineData("Discord")]
-    [InlineData("WhatsApp")]
-    [InlineData("Telegram")]
-    [InlineData("Teams")]
-    [InlineData("Custom")]
-    public void Constructor_WithVariousPlatforms_ShouldSetCorrectly(string platform)
+    [InlineData(Platform.Slack)]
+    [InlineData(Platform.Discord)]
+    [InlineData(Platform.WhatsApp)]
+    [InlineData(Platform.Telegram)]
+    [InlineData(Platform.Teams)]
+    [InlineData(Platform.YouTube)]
+    public void Constructor_WithVariousPlatforms_ShouldSetCorrectly(Platform platform)
     {
         // Act
         var workspace = new Workspace(Guid.NewGuid(), "Test", platform);
@@ -303,25 +295,24 @@ public class WorkspaceShould
     }
 
     [Fact]
-    public void Constructor_WithLongStrings_ShouldCreateSuccessfully()
+    public void Constructor_WithLongName_ShouldCreateSuccessfully()
     {
         // Arrange
         var longName = new string('a', 1000);
-        var longPlatform = new string('b', 1000);
 
         // Act
-        var workspace = new Workspace(Guid.NewGuid(), longName, longPlatform);
+        var workspace = new Workspace(Guid.NewGuid(), longName, Platform.Slack);
 
         // Assert
         Assert.Equal(longName, workspace.Name);
-        Assert.Equal(longPlatform, workspace.Platform);
+        Assert.Equal(Platform.Slack, workspace.Platform);
     }
 
     [Fact]
     public void Channels_ShouldReturnReadOnlyCollection()
     {
         // Arrange
-        var workspace = new Workspace(Guid.NewGuid(), "Test", "Slack");
+        var workspace = new Workspace(Guid.NewGuid(), "Test", Platform.Slack);
         workspace.AddChannel("general", "C1");
         workspace.AddChannel("random", "C2");
 
@@ -337,8 +328,8 @@ public class WorkspaceShould
     public void Entity_ShouldHaveUniqueId()
     {
         // Act
-        var workspace1 = new Workspace(Guid.NewGuid(), "Test 1", "Slack");
-        var workspace2 = new Workspace(Guid.NewGuid(), "Test 2", "Discord");
+        var workspace1 = new Workspace(Guid.NewGuid(), "Test 1", Platform.Slack);
+        var workspace2 = new Workspace(Guid.NewGuid(), "Test 2", Platform.Discord);
 
         // Assert
         Assert.NotEqual(workspace1.Id, workspace2.Id);
@@ -353,7 +344,7 @@ public class WorkspaceShould
         var beforeCreation = DateTime.UtcNow.AddMilliseconds(-100);
 
         // Act
-        var workspace = new Workspace(Guid.NewGuid(), "Test", "Slack");
+        var workspace = new Workspace(Guid.NewGuid(), "Test", Platform.Slack);
         var afterCreation = DateTime.UtcNow.AddMilliseconds(100);
 
         // Assert
@@ -366,7 +357,7 @@ public class WorkspaceShould
     public void Deactivate_ShouldUpdateTimestamp()
     {
         // Arrange
-        var workspace = new Workspace(Guid.NewGuid(), "Test", "Slack");
+        var workspace = new Workspace(Guid.NewGuid(), "Test", Platform.Slack);
 
         // Act
         System.Threading.Thread.Sleep(10);
@@ -379,7 +370,7 @@ public class WorkspaceShould
     public void Activate_ShouldUpdateTimestamp()
     {
         // Arrange
-        var workspace = new Workspace(Guid.NewGuid(), "Test", "Slack");
+        var workspace = new Workspace(Guid.NewGuid(), "Test", Platform.Slack);
         workspace.Deactivate();
 
         // Act
@@ -393,7 +384,7 @@ public class WorkspaceShould
     public void AddChannel_WithNullName_ShouldThrowArgumentNullException()
     {
         // Arrange
-        var workspace = new Workspace(Guid.NewGuid(), "Test", "Slack");
+        var workspace = new Workspace(Guid.NewGuid(), "Test", Platform.Slack);
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => workspace.AddChannel(null!, "C1"));
@@ -403,7 +394,7 @@ public class WorkspaceShould
     public void AddChannel_WithNullExternalId_ShouldThrowArgumentNullException()
     {
         // Arrange
-        var workspace = new Workspace(Guid.NewGuid(), "Test", "Slack");
+        var workspace = new Workspace(Guid.NewGuid(), "Test", Platform.Slack);
 
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() => workspace.AddChannel("general", null!));
@@ -413,7 +404,7 @@ public class WorkspaceShould
     public void AddChannel_WithEmptyStrings_ShouldCreateChannel()
     {
         // Arrange
-        var workspace = new Workspace(Guid.NewGuid(), "Test", "Slack");
+        var workspace = new Workspace(Guid.NewGuid(), "Test", Platform.Slack);
 
         // Act
         var channel = workspace.AddChannel("", "");
@@ -429,7 +420,7 @@ public class WorkspaceShould
     public void UpdateExternalId_WithLongString_ShouldSetCorrectly()
     {
         // Arrange
-        var workspace = new Workspace(Guid.NewGuid(), "Test", "Slack");
+        var workspace = new Workspace(Guid.NewGuid(), "Test", Platform.Slack);
         var longExternalId = new string('x', 10000);
 
         // Act

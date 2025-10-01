@@ -4,6 +4,7 @@ using Sigma.Application.Contracts;
 using Sigma.Domain.Contracts;
 using Sigma.Domain.Entities;
 using Sigma.Domain.Repositories;
+using Sigma.Shared.Enums;
 using Xunit;
 
 namespace Sigma.Application.Tests.Commands;
@@ -29,7 +30,7 @@ public class CreateWorkspaceCommandHandlerTests
         // Arrange
         var tenantId = Guid.NewGuid();
         var tenant = new Tenant("Test Tenant", "test-tenant", "free", 30);
-        var command = new CreateWorkspaceCommand(tenantId, "Test Workspace", "Slack", "T123456");
+        var command = new CreateWorkspaceCommand(tenantId, "Test Workspace", Platform.Slack, "T123456");
 
         _tenantRepository.Setup(x => x.GetByIdAsync(tenantId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(tenant);
@@ -48,7 +49,7 @@ public class CreateWorkspaceCommandHandlerTests
     {
         // Arrange
         var tenantId = Guid.NewGuid();
-        var command = new CreateWorkspaceCommand(tenantId, "Test Workspace", "Slack", null);
+        var command = new CreateWorkspaceCommand(tenantId, "Test Workspace", Platform.Slack, null);
 
         _tenantRepository.Setup(x => x.GetByIdAsync(tenantId, It.IsAny<CancellationToken>()))
             .ReturnsAsync((Tenant?)null);
@@ -69,7 +70,7 @@ public class CreateWorkspaceCommandHandlerTests
         // Arrange
         var tenantId = Guid.NewGuid();
         var tenant = new Tenant("Test Tenant", "test-tenant", "free", 30);
-        var command = new CreateWorkspaceCommand(tenantId, "Test Workspace", "Slack", "T123456");
+        var command = new CreateWorkspaceCommand(tenantId, "Test Workspace", Platform.Slack, "T123456");
 
         _tenantRepository.Setup(x => x.GetByIdAsync(tenantId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(tenant);
@@ -90,7 +91,7 @@ public class CreateWorkspaceCommandHandlerTests
         // Arrange
         var tenantId = Guid.NewGuid();
         var tenant = new Tenant("Test Tenant", "test-tenant", "free", 30);
-        var command = new CreateWorkspaceCommand(tenantId, "Test Workspace", "Discord", null);
+        var command = new CreateWorkspaceCommand(tenantId, "Test Workspace", Platform.Discord, null);
 
         _tenantRepository.Setup(x => x.GetByIdAsync(tenantId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(tenant);

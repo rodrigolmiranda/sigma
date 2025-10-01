@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Sigma.Domain.Entities;
 using Sigma.Infrastructure.Persistence;
+using Sigma.Shared.Enums;
 using Xunit;
 
 namespace Sigma.API.Tests.GraphQL;
@@ -117,8 +118,8 @@ public class TenantQueryTests : GraphQLTestBase
             var dbContext = scope.ServiceProvider.GetRequiredService<SigmaDbContext>();
 
             var tenant = new Tenant("Tenant with Workspaces", $"tenant-workspaces-{Guid.NewGuid():N}", "free", 30);
-            var workspace1 = tenant.AddWorkspace("Workspace 1", "Slack");
-            var workspace2 = tenant.AddWorkspace("Workspace 2", "Discord");
+            var workspace1 = tenant.AddWorkspace("Workspace 1", Platform.Slack);
+            var workspace2 = tenant.AddWorkspace("Workspace 2", Platform.Discord);
 
             dbContext.Tenants.Add(tenant);
             await dbContext.SaveChangesAsync();

@@ -7,6 +7,7 @@ using Sigma.Domain.ValueObjects;
 using Sigma.Infrastructure.Persistence;
 using Sigma.Infrastructure.Persistence.Repositories;
 using Sigma.Infrastructure.Tests.TestHelpers;
+using Sigma.Shared.Enums;
 using Xunit;
 
 namespace Sigma.Infrastructure.Tests.Repositories;
@@ -39,7 +40,8 @@ public class RepositoryUpdateMethodTests : IDisposable
         var tenant = new Tenant("Test Tenant", "test-tenant");
         await _context.Tenants.AddAsync(tenant);
 
-        var workspace = new Workspace(tenant.Id, "Test Workspace", "ext-ws-1");
+        var workspace = new Workspace(tenant.Id, "Test Workspace", Platform.Slack);
+        workspace.UpdateExternalId("ext-ws-1");
         await _context.Workspaces.AddAsync(workspace);
 
         var channel = new Channel(workspace.Id, "Original Name", "ext-ch-1");
@@ -74,7 +76,8 @@ public class RepositoryUpdateMethodTests : IDisposable
         var tenant = new Tenant("Test Tenant", "test-tenant");
         await _context.Tenants.AddAsync(tenant);
 
-        var workspace = new Workspace(tenant.Id, "Test Workspace", "ext-ws-1");
+        var workspace = new Workspace(tenant.Id, "Test Workspace", Platform.Slack);
+        workspace.UpdateExternalId("ext-ws-1");
         await _context.Workspaces.AddAsync(workspace);
 
         var channel = new Channel(workspace.Id, "Test Channel", "ext-ch-1");
@@ -102,7 +105,8 @@ public class RepositoryUpdateMethodTests : IDisposable
         var tenant = new Tenant("Test Tenant", "test-tenant");
         await _context.Tenants.AddAsync(tenant);
 
-        var workspace = new Workspace(tenant.Id, "Original Name", "ext-ws-1");
+        var workspace = new Workspace(tenant.Id, "Original Name", Platform.Slack);
+        workspace.UpdateExternalId("ext-ws-1");
         await _context.Workspaces.AddAsync(workspace);
         await _context.SaveChangesAsync();
 
@@ -134,7 +138,8 @@ public class RepositoryUpdateMethodTests : IDisposable
         var tenant = new Tenant("Test Tenant", "test-tenant");
         await _context.Tenants.AddAsync(tenant);
 
-        var workspace = new Workspace(tenant.Id, "Original Name", "ext-ws-1");
+        var workspace = new Workspace(tenant.Id, "Original Name", Platform.Slack);
+        workspace.UpdateExternalId("ext-ws-1");
         await _context.Workspaces.AddAsync(workspace);
         await _context.SaveChangesAsync();
 
@@ -209,7 +214,8 @@ public class RepositoryUpdateMethodTests : IDisposable
         var tenant = new Tenant("Test Tenant", "test-tenant");
         await _context.Tenants.AddAsync(tenant);
 
-        var workspace = new Workspace(tenant.Id, "Test Workspace", "ext-ws-1");
+        var workspace = new Workspace(tenant.Id, "Test Workspace", Platform.Slack);
+        workspace.UpdateExternalId("ext-ws-1");
         await _context.Workspaces.AddAsync(workspace);
 
         var channel = new Channel(workspace.Id, "Test Channel", "ext-ch-1");
@@ -256,7 +262,8 @@ public class RepositoryUpdateMethodTests : IDisposable
         var tenant = new Tenant("Test Tenant", "test-tenant");
         await _context.Tenants.AddAsync(tenant);
 
-        var workspace = new Workspace(tenant.Id, "Test Workspace", "ext-ws-1");
+        var workspace = new Workspace(tenant.Id, "Test Workspace", Platform.Slack);
+        workspace.UpdateExternalId("ext-ws-1");
         await _context.Workspaces.AddAsync(workspace);
 
         var channel = new Channel(workspace.Id, "Test Channel", "ext-ch-1");
@@ -288,7 +295,7 @@ public class RepositoryUpdateMethodTests : IDisposable
     }
 
     [Fact]
-    public async Task MessageRepository_Constructor_WithNullContext_ShouldThrowArgumentNullException()
+    public void MessageRepository_Constructor_WithNullContext_ShouldThrowArgumentNullException()
     {
         // Act & Assert
         var act = () => new MessageRepository(null!);
@@ -303,7 +310,8 @@ public class RepositoryUpdateMethodTests : IDisposable
         var tenant = new Tenant("Test Tenant", "test-tenant");
         await _context.Tenants.AddAsync(tenant);
 
-        var workspace = new Workspace(tenant.Id, "Test Workspace", "ext-ws-1");
+        var workspace = new Workspace(tenant.Id, "Test Workspace", Platform.Slack);
+        workspace.UpdateExternalId("ext-ws-1");
         await _context.Workspaces.AddAsync(workspace);
 
         var channel = new Channel(workspace.Id, "Test Channel", "ext-ch-1");
